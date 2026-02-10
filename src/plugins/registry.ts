@@ -1,4 +1,4 @@
-import type { Plugin } from './base';
+import type { Plugin } from './base.js';
 
 class PluginRegistry {
   private plugins: Map<string, Plugin> = new Map();

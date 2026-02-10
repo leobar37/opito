@@ -1,7 +1,7 @@
 import { mkdir, readdir, rename, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { logger } from './logger';
+import { logger } from './logger.js';
 
 export class BackupManager {
   private backupDir: string;

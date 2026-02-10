@@ -1,7 +1,7 @@
-import { SyncEngine } from '../core/sync-engine';
-import { BackupManager } from '../utils/backup';
-import { logger } from '../utils/logger';
-import type { SyncOptions } from '../types';
+import { SyncEngine } from '../core/sync-engine.js';
+import { BackupManager } from '../utils/backup.js';
+import { logger } from '../utils/logger.js';
+import type { SyncOptions } from '../types/index.js';
 
 interface SyncCommandOptions {
   dryRun?: boolean;

@@ -2,7 +2,7 @@
  * Logger utility with colors
  */
 import pc from 'picocolors';
-import type { LogLevel } from '../types';
+import type { LogLevel } from '../types/index.js';
 
 const ICONS: Record<LogLevel, string> = {
   info: 'ℹ️',

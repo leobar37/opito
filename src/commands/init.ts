@@ -1,5 +1,5 @@
-import { configManager } from '../utils/config';
-import { logger } from '../utils/logger';
+import { configManager } from '../utils/config.js';
+import { logger } from '../utils/logger.js';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';

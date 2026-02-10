@@ -5,7 +5,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
-import type { OpitoConfig } from '../types';
+import type { OpitoConfig } from '../types/index.js';
 
 const DEFAULT_CONFIG: OpitoConfig = {
   claude: {
@@ -13,6 +13,12 @@ const DEFAULT_CONFIG: OpitoConfig = {
   },
   opencode: {
     commandsPath: join(homedir(), '.config', 'opencode', 'commands'),
+  },
+  copilot: {
+    promptsPath: join(homedir(), '.config', 'opito', 'copilot', 'prompts'),
+    instructionsPath: join(homedir(), '.config', 'opito', 'copilot', 'instructions'),
+    agentsPath: join(homedir(), '.config', 'opito', 'copilot', 'agents'),
+    enabled: false,
   },
   backup: {
     enabled: true,
@@ -56,8 +62,15 @@ export class ConfigManager {
     }
 
     // Expand paths
+    if (!this.config) {
+      this.config = DEFAULT_CONFIG;
+    }
+    
     this.config.claude.commandsPath = this.expandPath(this.config.claude.commandsPath);
     this.config.opencode.commandsPath = this.expandPath(this.config.opencode.commandsPath);
+    this.config.copilot.promptsPath = this.expandPath(this.config.copilot.promptsPath);
+    this.config.copilot.instructionsPath = this.expandPath(this.config.copilot.instructionsPath);
+    this.config.copilot.agentsPath = this.expandPath(this.config.copilot.agentsPath);
     this.config.backup.path = this.expandPath(this.config.backup.path);
 
     return this.config;

@@ -1,9 +1,9 @@
-import { ClaudeParser } from './parsers/claude';
-import { OpencodeParser } from './parsers/opencode';
-import { Converter } from './converter';
-import { BackupManager } from '../utils/backup';
-import { logger } from '../utils/logger';
-import type { CommandConfig, SyncOptions, SyncResult, SyncReport } from '../types';
+import { ClaudeParser } from './parsers/claude.js';
+import { OpencodeParser } from './parsers/opencode.js';
+import { Converter } from './converter.js';
+import { BackupManager } from '../utils/backup.js';
+import { logger } from '../utils/logger.js';
+import type { CommandConfig, SyncOptions, SyncResult, SyncReport } from '../types/index.js';
 
 export class SyncEngine {
   private claudeParser: ClaudeParser;

@@ -1,6 +1,6 @@
 import YAML from 'yaml';
-import type { CommandConfig, ParsedFrontmatter } from '../../types';
-import { listMarkdownFiles, readFileContent } from '../../utils/fs';
+import type { CommandConfig, ParsedFrontmatter } from '../../types/index.js';
+import { listMarkdownFiles, readFileContent } from '../../utils/fs.js';
 import { join } from 'node:path';
 
 const FRONTMATTER_REGEX = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
@@ -35,8 +35,12 @@ export class ClaudeParser {
       return null;
     }
 
-    const frontmatterText = match[1];
+    const frontmatterText = match[1] ?? '';
     const bodyContent = match[2];
+
+    if (!bodyContent) {
+      return null;
+    }
 
     let frontmatter: ParsedFrontmatter;
     try {

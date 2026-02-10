@@ -1,6 +1,6 @@
-import { ClaudeParser } from '../core/parsers/claude';
-import { OpencodeParser } from '../core/parsers/opencode';
-import { logger } from '../utils/logger';
+import { ClaudeParser } from '../core/parsers/claude.js';
+import { OpencodeParser } from '../core/parsers/opencode.js';
+import { logger } from '../utils/logger.js';
 import pc from 'picocolors';
 
 interface DiffCommandOptions {

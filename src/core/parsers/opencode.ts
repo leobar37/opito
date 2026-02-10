@@ -1,8 +1,8 @@
 import YAML from 'yaml';
-import type { CommandConfig } from '../../types';
-import { listMarkdownFiles, readFileContent, writeFileContent, ensureDir } from '../../utils/fs';
+import type { CommandConfig } from '../../types/index.js';
+import { listMarkdownFiles, readFileContent, writeFileContent, ensureDir } from '../../utils/fs.js';
+import { logger } from '../../utils/logger.js';
 import { join } from 'node:path';
-import { logger } from '../../utils/logger';
 
 export class OpencodeParser {
   private commandsPath: string;
@@ -34,8 +34,12 @@ export class OpencodeParser {
       return null;
     }
 
-    const frontmatterText = match[1];
+    const frontmatterText = match[1] ?? '';
     const bodyContent = match[2];
+
+    if (!bodyContent) {
+      return null;
+    }
 
     let frontmatter: Record<string, unknown>;
     try {

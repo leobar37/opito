@@ -26,6 +26,13 @@ export interface DiffOptions {
   command?: string;
 }
 
+export interface CopilotConfig {
+  promptsPath: string;
+  instructionsPath: string;
+  agentsPath: string;
+  enabled: boolean;
+}
+
 export interface OpitoConfig {
   claude: {
     commandsPath: string;
@@ -33,12 +40,16 @@ export interface OpitoConfig {
   opencode: {
     commandsPath: string;
   };
+  copilot: CopilotConfig;
   backup: {
     enabled: boolean;
     maxBackups: number;
     path: string;
   };
 }
+
+export type SyncTarget = 'claude' | 'opencode' | 'copilot';
+export type SyncDirection = 'to' | 'from' | 'bidirectional';
 
 export interface SyncResult {
   success: boolean;

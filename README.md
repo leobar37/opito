@@ -88,6 +88,7 @@ You should see all your Claude commands now available in OpenCode.
 | `sync` | Sync commands | `opito sync` |
 | `sync --dry-run` | Simulate sync | `opito sync --dry-run` |
 | `sync --watch` | Watch for changes automatically | `opito sync --watch` |
+| `sync-copilot` | Sync commands to/from VS Code Copilot | `opito sync-copilot` |
 | `list` | List commands | `opito list` |
 | `diff` | Show differences | `opito diff` |
 | `doctor` | Environment diagnostics | `opito doctor` |
@@ -187,6 +188,86 @@ If you have permission issues:
 
 ```bash
 chmod +x src/cli.ts
+```
+
+## VS Code Copilot Support
+
+opito now supports syncing commands with **VS Code Copilot**! This allows you to use your Claude Code commands as custom slash commands in VS Code.
+
+### How It Works
+
+VS Code Copilot uses `.prompt.md` files stored in your workspace or user profile. opito can sync your existing Claude commands to Copilot format.
+
+### Enable Copilot Support
+
+```bash
+# Initialize with Copilot configuration
+opito init
+
+# Or manually edit ~/.config/opito/config.json:
+{
+  "copilot": {
+    "enabled": true,
+    "promptsPath": "~/.config/opito/copilot/prompts",
+    "instructionsPath": "~/.config/opito/copilot/instructions",
+    "agentsPath": "~/.config/opito/copilot/agents"
+  }
+}
+```
+
+### Sync Commands to Copilot
+
+```bash
+# Sync all Claude commands to Copilot
+opito sync-copilot
+
+# Sync only specific commands
+opito sync-copilot --filter "commit,review,test"
+
+# Preview what would be synced (dry run)
+opito sync-copilot --dry-run
+```
+
+### Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--source` | Source: `claude`, `opencode`, or `copilot` | `claude` |
+| `--target` | Target: `claude`, `opencode`, or `copilot` | `copilot` |
+| `--type` | Type: `prompts`, `instructions`, `agents`, or `all` | `prompts` |
+| `--filter` | Comma-separated list of command names | - |
+| `--dry-run` | Preview without making changes | - |
+
+### File Format Differences
+
+| Feature | Claude/OpenCode | VS Code Copilot |
+|---------|----------------|-----------------|
+| Extension | `.md` | `.prompt.md` |
+| Frontmatter | `description` | `description`, `agent`, `model`, `tools` |
+| Location | `~/.claude/commands/` | `~/.config/opito/copilot/prompts/` |
+
+When syncing to Copilot, opito automatically adds sensible defaults for:
+- `agent`: `agent` (enables tool usage)
+- `model`: `GPT-4o`
+- `tools`: `['search', 'editFiles']`
+
+### Manual Copilot Setup in VS Code
+
+To use the synced commands in VS Code:
+
+1. Open VS Code Settings (`Cmd/Ctrl + ,`)
+2. Search for "Copilot" 
+3. Enable "Chat: Prompt Files"
+4. Set your prompts folder path
+
+Or create a `.vscode/settings.json` in your workspace:
+
+```json
+{
+  "chat.promptFilesLocations": {
+    "/path/to/your/prompts": true
+  }
+}
 ```
 
 ## Architecture

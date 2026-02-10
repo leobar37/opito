@@ -1,4 +1,4 @@
-import type { CommandConfig } from '../types';
+import type { CommandConfig } from '../types/index.js';
 
 export class Converter {
   convert(claudeCommand: CommandConfig): CommandConfig {

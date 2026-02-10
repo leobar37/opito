@@ -1,7 +1,7 @@
 import cac from 'cac';
-import { configManager } from './utils/config';
-import { logger } from './utils/logger';
-import { syncCommand, listCommand, diffCommand, initCommand, doctorCommand } from './commands';
+import { configManager } from './utils/config.js';
+import { logger } from './utils/logger.js';
+import { syncCommand, syncCopilotCommand, listCommand, diffCommand, initCommand, doctorCommand } from './commands/index.js';
 
 const cli = cac('opito');
 
@@ -15,6 +15,31 @@ cli
     try {
       const config = await configManager.load();
       await syncCommand(config, options);
+    } catch (error) {
+      logger.error(error instanceof Error ? error.message : 'Unknown error');
+      process.exit(1);
+    }
+  });
+
+cli
+  .command('sync-copilot', 'Sync commands to/from VS Code Copilot')
+  .option('--dry-run', 'Show what would be synced without making changes')
+  .option('--force', 'Skip backup and overwrite existing commands')
+  .option('--source <source>', 'Source: claude, opencode, or copilot', { default: 'claude' })
+  .option('--target <target>', 'Target: claude, opencode, or copilot', { default: 'copilot' })
+  .option('--type <type>', 'Type: prompts, instructions, agents, or all', { default: 'prompts' })
+  .option('--filter <commands>', 'Comma-separated list of commands to sync')
+  .action(async (options) => {
+    try {
+      const config = await configManager.load();
+      await syncCopilotCommand(config, {
+        dryRun: options.dryRun,
+        force: options.force,
+        source: options.source,
+        target: options.target,
+        type: options.type,
+        filter: options.filter ? options.filter.split(',').map((f: string) => f.trim()) : undefined,
+      });
     } catch (error) {
       logger.error(error instanceof Error ? error.message : 'Unknown error');
       process.exit(1);
