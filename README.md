@@ -1,37 +1,49 @@
 # opito
 
-CLI extensible para sincronizar comandos de Claude Code a OpenCode.
+Extensible CLI to sync Claude Code commands to OpenCode.
 
-## ¿Qué es opito?
+## What is opito?
 
-Si usas tanto **Claude Code** como **OpenCode**, probablemente tengas comandos personalizados en `~/.claude/commands/` que te gustaría usar también en OpenCode. **opito** automatiza esta sincronización.
+If you use both **Claude Code** and **OpenCode**, you probably have custom commands in `~/.claude/commands/` that you'd like to use in OpenCode as well. **opito** automates this synchronization.
 
-## Instalación
+## Installation
+
+```bash
+npm install -g opito
+```
+
+Or with npx (no installation required):
+
+```bash
+npx opito
+```
+
+Or from source:
 
 ```bash
 cd opito
 bun install
 ```
 
-## Tutorial Rápido
+## Quick Tutorial
 
-### 1. Inicializar opito
+### 1. Initialize opito
 
-Primera vez que usas opito:
-
-```bash
-bun run src/cli.ts init
-```
-
-Esto crea el archivo de configuración en `~/.config/opito/config.json`.
-
-### 2. Verificar que todo esté bien
+First time using opito:
 
 ```bash
-bun run src/cli.ts doctor
+opito init
 ```
 
-Deberías ver:
+This creates the configuration file at `~/.config/opito/config.json`.
+
+### 2. Check that everything is working
+
+```bash
+opito doctor
+```
+
+You should see:
 ```
 ✓ Claude commands directory
 ✓ OpenCode commands directory
@@ -39,78 +51,78 @@ Deberías ver:
 📁 OpenCode commands: X found
 ```
 
-### 3. Sincronizar comandos (modo prueba)
+### 3. Sync commands (test mode)
 
-Antes de hacer cambios reales, prueba con `--dry-run`:
-
-```bash
-bun run src/cli.ts sync --dry-run
-```
-
-Verás qué comandos se crearían/actualizarían sin hacer cambios reales.
-
-### 4. Sincronizar comandos (en serio)
+Before making real changes, test with `--dry-run`:
 
 ```bash
-bun run src/cli.ts sync
+opito sync --dry-run
 ```
 
-Esto:
-- Crea un backup automático de tus comandos actuales de OpenCode
-- Copia todos los comandos de Claude a OpenCode
-- Muestra un resumen de lo que hizo
+You'll see which commands would be created/updated without making actual changes.
 
-### 5. Verificar sincronización
+### 4. Sync commands (for real)
 
 ```bash
-bun run src/cli.ts list --source opencode
+opito sync
 ```
 
-Deberías ver todos tus comandos de Claude ahora disponibles en OpenCode.
+This:
+- Creates an automatic backup of your current OpenCode commands
+- Copies all commands from Claude to OpenCode
+- Shows a summary of what was done
 
-## Comandos Disponibles
+### 5. Verify synchronization
 
-| Comando | Descripción | Ejemplo |
+```bash
+opito list --source opencode
+```
+
+You should see all your Claude commands now available in OpenCode.
+
+## Available Commands
+
+| Command | Description | Example |
 |---------|-------------|---------|
-| `init` | Crear configuración inicial | `opito init` |
-| `sync` | Sincronizar comandos | `opito sync` |
-| `sync --dry-run` | Simular sincronización | `opito sync --dry-run` |
-| `sync --watch` | Observar cambios automáticamente | `opito sync --watch` |
-| `list` | Listar comandos | `opito list` |
-| `diff` | Ver diferencias | `opito diff` |
-| `doctor` | Diagnóstico del entorno | `opito doctor` |
+| `init` | Create initial configuration | `opito init` |
+| `sync` | Sync commands | `opito sync` |
+| `sync --dry-run` | Simulate sync | `opito sync --dry-run` |
+| `sync --watch` | Watch for changes automatically | `opito sync --watch` |
+| `list` | List commands | `opito list` |
+| `diff` | Show differences | `opito diff` |
+| `doctor` | Environment diagnostics | `opito doctor` |
 
-## Ejemplos de Uso
+## Usage Examples
 
-### Sincronizar solo comandos específicos
-
-```bash
-bun run src/cli.ts sync --filter "commit,qa,build"
-```
-
-### Modo observador (watch)
-
-Útil cuando estás editando comandos:
+### Sync only specific commands
 
 ```bash
-bun run src/cli.ts sync --watch
+opito sync --filter "commit,qa,build"
 ```
 
-Cada vez que modifiques un archivo en `~/.claude/commands/`, se sincronizará automáticamente.
+### Watch mode
 
-### Ver diferencias
+Useful when editing commands:
 
 ```bash
-# Ver todas las diferencias
-bun run src/cli.ts diff
-
-# Ver diferencia de un comando específico
-bun run src/cli.ts diff commit
+opito sync --watch
 ```
 
-## Configuración
+Every time you modify a file in `~/.claude/commands/`, it will sync automatically.
 
-El archivo de configuración está en `~/.config/opito/config.json`:
+### View differences
+
+```bash
+# View all differences
+opito diff
+
+# View difference of a specific command
+opito diff commit
+```
+
+## Configuration
+
+The configuration file is located at `~/.config/opito/config.json`:
 
 ```json
 {
@@ -128,9 +140,9 @@ El archivo de configuración está en `~/.config/opito/config.json`:
 }
 ```
 
-### Cambiar rutas
+### Change paths
 
-Si tus comandos están en ubicaciones diferentes:
+If your commands are in different locations:
 
 ```json
 {
@@ -145,19 +157,19 @@ Si tus comandos están en ubicaciones diferentes:
 
 ## Backups
 
-Cada vez que sincronizas, opito crea un backup automático en:
+Every time you sync, opito creates an automatic backup at:
 ```
 ~/.config/opito/backups/backup-YYYY-MM-DDTHH-MM-SS.mmmZ/
 ```
 
-Esto te permite restaurar comandos anteriores si algo sale mal.
+This allows you to restore previous commands if something goes wrong.
 
-## Flujo de Trabajo Recomendado
+## Recommended Workflow
 
-1. **Edita** tus comandos en `~/.claude/commands/`
-2. **Prueba** con `opito sync --dry-run`
-3. **Sincroniza** con `opito sync`
-4. **Verifica** con `opito list --source opencode`
+1. **Edit** your commands in `~/.claude/commands/`
+2. **Test** with `opito sync --dry-run`
+3. **Sync** with `opito sync`
+4. **Verify** with `opito list --source opencode`
 
 ## Troubleshooting
 
@@ -167,36 +179,36 @@ Esto te permite restaurar comandos anteriores si algo sale mal.
 opito doctor
 ```
 
-Verifica que las rutas sean correctas.
+Verify that the paths are correct.
 
-### Permisos
+### Permissions
 
-Si tienes problemas de permisos:
+If you have permission issues:
 
 ```bash
 chmod +x src/cli.ts
 ```
 
-## Arquitectura
+## Architecture
 
-opito está diseñado para ser extensible:
+opito is designed to be extensible:
 
-- **Parser modular**: Fácil agregar nuevos formatos
-- **Sistema de plugins**: Preparado para extensiones
-- **CLI con CAC**: Moderno y mantenible
+- **Modular parser**: Easy to add new formats
+- **Plugin system**: Ready for extensions
+- **CLI with CAC**: Modern and maintainable
 
-## Contribuir
+## Contributing
 
-1. Fork el repositorio
-2. Crea una rama: `git checkout -b feature/nueva-feature`
-3. Commitea tus cambios: `git commit -am 'Agrega nueva feature'`
-4. Push a la rama: `git push origin feature/nueva-feature`
-5. Crea un Pull Request
+1. Fork the repository
+2. Create a branch: `git checkout -b feature/new-feature`
+3. Commit your changes: `git commit -am 'Add new feature'`
+4. Push to the branch: `git push origin feature/new-feature`
+5. Create a Pull Request
 
-## Licencia
+## License
 
 MIT
 
 ---
 
-**¿Preguntas?** Abre un issue o contacta al autor.
+**Questions?** Open an issue or contact the author.
