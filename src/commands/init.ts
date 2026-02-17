@@ -44,6 +44,6 @@ export async function initCommand(options: InitCommandOptions): Promise<void> {
     logger.info(`OpenCode commands: ${defaultConfig.opencode.commandsPath}`);
   }
   
-  console.log('');
+  logger.newline();
   logger.info('Run "opito sync" to start synchronizing commands');
 }

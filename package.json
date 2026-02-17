@@ -6,7 +6,8 @@
   "module": "src/cli.ts",
   "type": "module",
   "bin": {
-    "opito": "./dist/cli.js"
+    "opito": "./dist/cli.js",
+    "opito-dev": "./bin/opito-dev.js"
   },
   "files": [
     "dist",
@@ -16,6 +17,8 @@
     "start": "bun run src/cli.ts",
     "dev": "bun --watch run src/cli.ts",
     "build": "tsc",
+    "link": "bun link",
+    "unlink": "bun unlink",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -43,9 +46,11 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@clack/prompts": "^1.0.1",
     "cac": "^6.7.14",
     "chokidar": "^5.0.0",
     "picocolors": "^1.1.1",
+    "picospinner": "^3.0.0",
     "yaml": "^2.8.2"
   }
 }

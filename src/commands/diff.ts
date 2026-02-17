@@ -40,20 +40,20 @@ export async function diffCommand(
       return;
     }
 
-    console.log('');
-    console.log(pc.bold(`Diff for: ${commandName}`));
-    console.log(pc.gray('─'.repeat(60)));
+    logger.newline();
+    logger.raw(pc.bold(`Diff for: ${commandName}`));
+    logger.raw(pc.gray('─'.repeat(60)));
     
     if (claudeCmd.description !== opencodeCmd.description) {
-      console.log(pc.yellow('Description differs:'));
-      console.log(`  Claude:   ${claudeCmd.description}`);
-      console.log(`  OpenCode: ${opencodeCmd.description}`);
+      logger.warning('Description differs:');
+      logger.raw(`  Claude:   ${claudeCmd.description}`);
+      logger.raw(`  OpenCode: ${opencodeCmd.description}`);
     }
 
     if (claudeCmd.content !== opencodeCmd.content) {
-      console.log(pc.yellow('Content differs'));
+      logger.warning('Content differs');
     } else {
-      console.log(pc.green('Content is identical'));
+      logger.success('Content is identical');
     }
   } else {
     const allCommands = new Set([...claudeMap.keys(), ...opencodeMap.keys()]);
@@ -77,7 +77,7 @@ export async function diffCommand(
       return;
     }
 
-    console.log('');
+    logger.newline();
     logger.table(
       ['Command', 'Status'],
       differences.map(d => {

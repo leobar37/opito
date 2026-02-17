@@ -33,6 +33,11 @@ export interface CopilotConfig {
   enabled: boolean;
 }
 
+export interface DroidConfig {
+  commandsPath: string;
+  enabled: boolean;
+}
+
 export interface OpitoConfig {
   claude: {
     commandsPath: string;
@@ -41,6 +46,7 @@ export interface OpitoConfig {
     commandsPath: string;
   };
   copilot: CopilotConfig;
+  droid: DroidConfig;
   backup: {
     enabled: boolean;
     maxBackups: number;
@@ -50,6 +56,16 @@ export interface OpitoConfig {
 
 export type SyncTarget = 'claude' | 'opencode' | 'copilot';
 export type SyncDirection = 'to' | 'from' | 'bidirectional';
+
+export type Provider = 'claude' | 'opencode' | 'copilot' | 'droid';
+export type Scope = 'local' | 'global';
+
+export interface UnifiedSyncOptions extends SyncOptions {
+  provider?: Provider;
+  target?: Provider;
+  scope?: Scope;
+  interactive?: boolean;
+}
 
 export interface SyncResult {
   success: boolean;

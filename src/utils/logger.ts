@@ -55,34 +55,55 @@ class Logger {
     this.log('debug', message);
   }
 
-  // Print sync report
   report(results: { total: number; created: number; updated: number; errors: number }): void {
-    console.log('');
-    console.log(pc.bold('📊 Sync Report'));
-    console.log(pc.gray('─'.repeat(40)));
-    console.log(`${pc.blue('Total:')}     ${results.total}`);
-    console.log(`${pc.green('Created:')}   ${results.created}`);
-    console.log(`${pc.yellow('Updated:')}   ${results.updated}`);
-    console.log(`${pc.red('Errors:')}    ${results.errors}`);
-    console.log(pc.gray('─'.repeat(40)));
+    this.newline();
+    this.raw(pc.bold('📊 Sync Report'));
+    this.raw(pc.gray('─'.repeat(40)));
+    this.raw(`${pc.blue('Total:')}     ${results.total}`);
+    this.raw(`${pc.green('Created:')}   ${results.created}`);
+    this.raw(`${pc.yellow('Updated:')}   ${results.updated}`);
+    this.raw(`${pc.red('Errors:')}    ${results.errors}`);
+    this.raw(pc.gray('─'.repeat(40)));
   }
 
-  // Print list table
   table(headers: string[], rows: string[][]): void {
     const colWidths = headers.map((h, i) => 
-      Math.max(h.length, ...rows.map(r => r[i]?.length || 0)) + 2
+      Math.max(h.length, ...rows.map(r => this.stripAnsi(r[i] || '').length)) + 2
     );
 
-    // Header
-    const headerLine = headers.map((h, i) => h.padEnd(colWidths[i])).join('');
-    console.log(pc.bold(headerLine));
-    console.log(pc.gray('─'.repeat(colWidths.reduce((a, b) => a + b, 0))));
+    const totalWidth = colWidths.reduce((a, b) => a + b, 0);
+    const headerLine = headers.map((h, i) => {
+      const width = colWidths[i] ?? h.length + 2;
+      return pc.bold(h).padEnd(width + 8);
+    }).join('');
+    console.log(headerLine);
+    console.log(pc.gray('─'.repeat(totalWidth)));
 
-    // Rows
     for (const row of rows) {
-      const line = row.map((cell, i) => (cell || '').padEnd(colWidths[i])).join('');
+      const line = row.map((cell, i) => {
+        const visibleLength = this.stripAnsi(cell || '').length;
+        const width = colWidths[i] ?? visibleLength + 2;
+        const padding = width - visibleLength;
+        return (cell || '') + ' '.repeat(Math.max(0, padding));
+      }).join('');
       console.log(line);
     }
+  }
+
+  raw(message: string): void {
+    console.log(message);
+  }
+
+  newline(): void {
+    console.log('');
+  }
+
+  json(data: unknown, indent: number = 2): void {
+    console.log(JSON.stringify(data, null, indent));
+  }
+
+  private stripAnsi(str: string): string {
+    return str.replace(/\u001b\[[0-9;]*m/g, '');
   }
 }
 

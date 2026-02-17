@@ -5,6 +5,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { cwd } from 'node:process';
 import type { OpitoConfig } from '../types/index.js';
 
 const DEFAULT_CONFIG: OpitoConfig = {
@@ -15,10 +16,14 @@ const DEFAULT_CONFIG: OpitoConfig = {
     commandsPath: join(homedir(), '.config', 'opencode', 'commands'),
   },
   copilot: {
-    promptsPath: join(homedir(), '.config', 'opito', 'copilot', 'prompts'),
-    instructionsPath: join(homedir(), '.config', 'opito', 'copilot', 'instructions'),
-    agentsPath: join(homedir(), '.config', 'opito', 'copilot', 'agents'),
+    promptsPath: join(cwd(), '.github', 'prompts'),
+    instructionsPath: join(cwd(), '.github', 'prompts', 'instructions'),
+    agentsPath: join(cwd(), '.github', 'prompts', 'agents'),
     enabled: false,
+  },
+  droid: {
+    commandsPath: join(homedir(), '.factory', 'commands'),
+    enabled: true,
   },
   backup: {
     enabled: true,
@@ -52,6 +57,7 @@ export class ConfigManager {
           ...userConfig,
           claude: { ...DEFAULT_CONFIG.claude, ...userConfig.claude },
           opencode: { ...DEFAULT_CONFIG.opencode, ...userConfig.opencode },
+          droid: { ...DEFAULT_CONFIG.droid, ...userConfig.droid },
           backup: { ...DEFAULT_CONFIG.backup, ...userConfig.backup },
         };
       } else {
@@ -68,10 +74,14 @@ export class ConfigManager {
     
     this.config.claude.commandsPath = this.expandPath(this.config.claude.commandsPath);
     this.config.opencode.commandsPath = this.expandPath(this.config.opencode.commandsPath);
-    this.config.copilot.promptsPath = this.expandPath(this.config.copilot.promptsPath);
-    this.config.copilot.instructionsPath = this.expandPath(this.config.copilot.instructionsPath);
-    this.config.copilot.agentsPath = this.expandPath(this.config.copilot.agentsPath);
+    this.config.droid.commandsPath = this.expandPath(this.config.droid.commandsPath);
     this.config.backup.path = this.expandPath(this.config.backup.path);
+
+    // Copilot paths are always calculated dynamically based on current working directory
+    // This makes it repository-level, not global
+    this.config.copilot.promptsPath = resolve(cwd(), '.github', 'prompts');
+    this.config.copilot.instructionsPath = resolve(cwd(), '.github', 'prompts', 'instructions');
+    this.config.copilot.agentsPath = resolve(cwd(), '.github', 'prompts', 'agents');
 
     return this.config;
   }
@@ -84,6 +94,7 @@ export class ConfigManager {
       ...config,
       claude: { ...current.claude, ...config.claude },
       opencode: { ...current.opencode, ...config.opencode },
+      droid: { ...current.droid, ...config.droid },
       backup: { ...current.backup, ...config.backup },
     };
     await writeFile(CONFIG_FILE, JSON.stringify(merged, null, 2));

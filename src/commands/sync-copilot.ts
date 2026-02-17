@@ -27,10 +27,7 @@ export async function syncCopilotCommand(
   const target = options.target || 'copilot';
   const type = options.type || 'prompts';
 
-  if (!config.copilot.enabled && target === 'copilot') {
-    logger.error('Copilot is not enabled. Run "opito init" to configure Copilot paths.');
-    process.exit(1);
-  }
+
 
   const backupManager = config.backup.enabled && !options.force && !options.dryRun
     ? new BackupManager(config.backup.path, config.backup.maxBackups)
@@ -71,8 +68,8 @@ export async function syncCopilotCommand(
         config.claude.commandsPath
       );
     } else if (source === 'claude' && target === 'opencode') {
-      const { syncCommand } = await import('./sync.js');
-      await syncCommand(config, {
+      const { legacySyncCommand } = await import('./sync.js');
+      await legacySyncCommand(config, {
         dryRun: options.dryRun,
         force: options.force,
         watch: false,

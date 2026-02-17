@@ -30,13 +30,13 @@ export async function listCommand(
   }
 
   if (format === 'json') {
-    console.log(JSON.stringify({ claude: claudeCommands, opencode: opencodeCommands }, null, 2));
+    logger.json({ claude: claudeCommands, opencode: opencodeCommands });
     return;
   }
 
   if (source === 'claude' || source === 'all') {
-    console.log('');
-    console.log(logger['info'] ? '' : '📁 Claude Commands');
+    logger.newline();
+    logger.raw('📁 Claude Commands');
     if (claudeCommands.length === 0) {
       logger.warning('No commands found');
     } else {
@@ -48,8 +48,8 @@ export async function listCommand(
   }
 
   if (source === 'opencode' || source === 'all') {
-    console.log('');
-    console.log('📁 OpenCode Commands');
+    logger.newline();
+    logger.raw('📁 OpenCode Commands');
     if (opencodeCommands.length === 0) {
       logger.warning('No commands found');
     } else {
