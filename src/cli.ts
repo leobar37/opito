@@ -10,9 +10,9 @@ import {
   syncDroidCommand,
 } from "./commands/index.js";
 import { listCommand } from "./commands/list.js";
-import { diffCommand } from "./commands/diff.js";
 import { initCommand } from "./commands/init.js";
 import { doctorCommand } from "./commands/doctor.js";
+import { setBaseCommand } from "./commands/set.js";
 import { isValidProvider, isValidScope, getAllProviders } from "./core/providers.js";
 import type { Provider, Scope } from "./types/index.js";
 
@@ -47,19 +47,22 @@ cli
     try {
       const config = await configManager.load();
 
-      const provider = providerArg as Provider | undefined;
+      const provider = (providerArg || config.baseProvider) as Provider;
       const target = (options.target || targetArg) as Provider | undefined;
       const scope: Scope = options.local ? 'local' : 'global';
 
-      if (options.interactive || (!provider && !target)) {
+      if (options.interactive || !target) {
         await unifiedSyncCommand(config, {
+          provider,
+          target,
+          scope,
           interactive: true,
           dryRun: options.dryRun,
           force: options.force,
           watch: options.watch,
           filter: options.filter ? options.filter.split(',').map((f: string) => f.trim()) : undefined,
         });
-      } else if (provider && isValidProvider(provider)) {
+      } else if (isValidProvider(provider)) {
         await unifiedSyncCommand(config, {
           provider,
           target,
@@ -170,21 +173,6 @@ cli
   });
 
 cli
-  .command(
-    "diff [command]",
-    "Show differences between Claude and OpenCode commands",
-  )
-  .action(async (commandName: string | undefined, options: Record<string, unknown>) => {
-    try {
-      const config = await configManager.load();
-      await diffCommand(config, commandName, options);
-    } catch (error) {
-      logger.error(error instanceof Error ? error.message : "Unknown error");
-      process.exit(1);
-    }
-  });
-
-cli
   .command("init", "Initialize opito configuration")
   .option("--yes", "Skip prompts and use defaults")
   .action(async (options: { yes?: boolean }) => {
@@ -202,6 +190,21 @@ cli
     try {
       const config = await configManager.load();
       await doctorCommand(config);
+    } catch (error) {
+      logger.error(error instanceof Error ? error.message : "Unknown error");
+      process.exit(1);
+    }
+  });
+
+cli
+  .command("set base <provider>", "Set the default base provider for sync operations")
+  .example("opito set base opencode    # Set OpenCode as default source")
+  .example("opito set base claude      # Set Claude as default source")
+  .example("opito set base droid       # Set Droid as default source")
+  .action(async (provider: string) => {
+    try {
+      const config = await configManager.load();
+      await setBaseCommand(config, { provider });
     } catch (error) {
       logger.error(error instanceof Error ? error.message : "Unknown error");
       process.exit(1);

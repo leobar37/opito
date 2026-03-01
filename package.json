@@ -17,6 +17,9 @@
     "start": "bun run src/cli.ts",
     "dev": "bun --watch run src/cli.ts",
     "build": "tsc",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
     "link": "bun link",
     "unlink": "bun unlink",
     "prepublishOnly": "npm run build"

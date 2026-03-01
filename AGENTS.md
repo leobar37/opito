@@ -1,5 +1,8 @@
 # AGENTS.md - Coding Guidelines for Opito
 
+**Generated:** 2026-03-01
+**Project:** opito - CLI sync tool for Claude Code ↔ OpenCode
+
 > **What is @AGENTS.md?** This file follows the [@AGENTS.md standard](https://agents.md/) - a convention for providing context to AI coding agents. It helps agents understand project conventions, build commands, code style, and architectural patterns without requiring lengthy explanations in every conversation.
 
 ## Project Overview
@@ -196,6 +199,29 @@ export class ClassName {
 - Bun automatically loads `.env` files
 - Use `bun:sqlite` for SQLite (if needed)
 - Bun's test runner is built-in (`bun:test`)
+
+## Entry Points
+- **Dev entry:** `bun run src/cli.ts` or `bun run dev` (with watch)
+- **Published entry:** `dist/cli.js` (set as `main` in package.json)
+- **Bin shims:** `opito` → dist/cli.js, `opito-dev` → bin/opito-dev.js (dev convenience)
+- **Non-standard:** `module` field points to `src/cli.ts` (Bun can run .ts directly)
+
+## CI/CD
+- **Workflow:** `.github/workflows/publish.yml` — triggers on tag push (v*)
+- **Build:** `tsc` (TypeScript compiler)
+- **Publish:** npm publish with NPM_TOKEN secret
+- **Note:** No test/lint CI — only publish workflow exists
+
+## Anti-Patterns (THIS PROJECT)
+- **Deprecated commands:** `sync-copilot` and `sync-droid` are deprecated. Use unified `opito sync` command instead.
+- **Package.json issues:** `module` field points to `src/cli.ts` (non-standard — should point to built JS). No `types` field for published package.
+- **CI gaps:** No test/lint workflow — only publish exists.
+
+## External Resources
+- **Workflow:** `.github/workflows/publish.yml` — triggers on tag push (v*)
+- **Build:** `tsc` (TypeScript compiler)
+- **Publish:** npm publish with NPM_TOKEN secret
+- **Note:** No test/lint CI — only publish workflow exists
 
 ## External Resources
 

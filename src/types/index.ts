@@ -52,6 +52,7 @@ export interface OpitoConfig {
     maxBackups: number;
     path: string;
   };
+  baseProvider: Provider;
 }
 
 export type SyncTarget = 'claude' | 'opencode' | 'copilot';

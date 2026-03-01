@@ -30,6 +30,7 @@ const DEFAULT_CONFIG: OpitoConfig = {
     maxBackups: 10,
     path: join(homedir(), '.config', 'opito', 'backups'),
   },
+  baseProvider: 'claude',
 };
 
 const CONFIG_DIR = join(homedir(), '.config', 'opito');
@@ -59,6 +60,7 @@ export class ConfigManager {
           opencode: { ...DEFAULT_CONFIG.opencode, ...userConfig.opencode },
           droid: { ...DEFAULT_CONFIG.droid, ...userConfig.droid },
           backup: { ...DEFAULT_CONFIG.backup, ...userConfig.backup },
+          baseProvider: userConfig.baseProvider || DEFAULT_CONFIG.baseProvider,
         };
       } else {
         this.config = DEFAULT_CONFIG;
