@@ -90,3 +90,67 @@ export interface ParsedFrontmatter {
 }
 
 export type LogLevel = 'info' | 'success' | 'warning' | 'error' | 'debug';
+
+/**
+ * Skill configuration for sync-skills command
+ */
+export interface SkillConfig {
+  name: string;
+  description: string;
+  content: string;
+  sourcePath: string;
+  frontmatter: SkillFrontmatter;
+}
+
+/**
+ * Frontmatter fields for skills across all providers
+ */
+export interface SkillFrontmatter {
+  // Common fields (required)
+  name: string;
+  description: string;
+  // Claude specific
+  allowedTools?: string[];
+  // Droid specific
+  userInvocable?: boolean;
+  disableModelInvocation?: boolean;
+  // OpenCode specific
+  license?: string;
+  compatibility?: string;
+  metadata?: Record<string, string>;
+}
+
+/**
+ * Options for sync-skills command
+ */
+export interface SyncSkillsOptions extends SyncOptions {
+  from?: SkillProvider;
+  to?: SkillProvider;
+}
+
+/**
+ * Result of syncing a single skill
+ */
+export interface SyncSkillResult {
+  success: boolean;
+  skill: string;
+  action: 'created' | 'updated' | 'skipped' | 'error';
+  error?: string;
+}
+
+/**
+ * Report for sync-skills operation
+ */
+export interface SyncSkillsReport {
+  total: number;
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: number;
+  results: SyncSkillResult[];
+}
+
+/**
+ * Providers that support skills
+ */
+export type SkillProvider = 'claude' | 'droid' | 'opencode';

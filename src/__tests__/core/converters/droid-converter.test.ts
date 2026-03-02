@@ -1,6 +1,6 @@
 import { test, expect, describe } from "bun:test";
-import { DroidConverter } from "./droid-converter.js";
-import type { CommandConfig } from "../../types/index.js";
+import { DroidConverter } from "../../../core/converters/droid-converter.js";
+import type { CommandConfig } from "../../../types/index.js";
 
 describe("DroidConverter", () => {
   const converter = new DroidConverter();

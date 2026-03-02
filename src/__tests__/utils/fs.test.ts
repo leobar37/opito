@@ -5,7 +5,7 @@ import {
   readFileContent, 
   writeFileContent, 
   fileExists,
-} from "./fs.js";
+} from "../../utils/fs.js";
 import { mkdir, writeFile, rm, rmdir } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";

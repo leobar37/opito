@@ -1,10 +1,10 @@
 import { test, expect, describe, beforeEach, afterEach, mock } from "bun:test";
-import { setBaseCommand } from "./set.js";
-import { ConfigManager } from "../utils/config.js";
+import { setBaseCommand } from "../../commands/set.js";
+import { ConfigManager } from "../../utils/config.js";
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import type { OpitoConfig } from "../types/index.js";
+import type { OpitoConfig } from "../../types/index.js";
 
 describe("setBaseCommand", () => {
   let testConfigDir: string;

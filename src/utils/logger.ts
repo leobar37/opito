@@ -66,6 +66,18 @@ class Logger {
     this.raw(pc.gray('─'.repeat(40)));
   }
 
+  reportSkills(results: { total: number; created: number; updated: number; skipped: number; errors: number }): void {
+    this.newline();
+    this.raw(pc.bold('📊 Skills Sync Report'));
+    this.raw(pc.gray('─'.repeat(40)));
+    this.raw(`${pc.blue('Total:')}     ${results.total}`);
+    this.raw(`${pc.green('Created:')}   ${results.created}`);
+    this.raw(`${pc.yellow('Updated:')}   ${results.updated}`);
+    this.raw(`${pc.cyan('Skipped:')}   ${results.skipped}`);
+    this.raw(`${pc.red('Errors:')}    ${results.errors}`);
+    this.raw(pc.gray('─'.repeat(40)));
+  }
+
   table(headers: string[], rows: string[][]): void {
     const colWidths = headers.map((h, i) => 
       Math.max(h.length, ...rows.map(r => this.stripAnsi(r[i] || '').length)) + 2

@@ -6,7 +6,7 @@ import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
-import type { OpitoConfig } from '../types/index.js';
+import type { OpitoConfig, SkillProvider } from '../types/index.js';
 
 const DEFAULT_CONFIG: OpitoConfig = {
   claude: {
@@ -32,6 +32,35 @@ const DEFAULT_CONFIG: OpitoConfig = {
   },
   baseProvider: 'claude',
 };
+
+/**
+ * Get the skills path for a provider
+ */
+export function getSkillsPath(provider: SkillProvider, scope: 'local' | 'global' = 'global'): string {
+  if (scope === 'local') {
+    switch (provider) {
+      case 'claude':
+        return resolve(cwd(), '.claude', 'skills');
+      case 'droid':
+        return resolve(cwd(), '.factory', 'skills');
+      case 'opencode':
+        return resolve(cwd(), '.opencode', 'skills');
+      default:
+        return resolve(cwd(), '.opencode', 'skills');
+    }
+  }
+
+  switch (provider) {
+    case 'claude':
+      return join(homedir(), '.claude', 'skills');
+    case 'droid':
+      return join(homedir(), '.factory', 'skills');
+    case 'opencode':
+      return join(homedir(), '.config', 'opencode', 'skills');
+    default:
+      return join(homedir(), '.config', 'opencode', 'skills');
+  }
+}
 
 const CONFIG_DIR = join(homedir(), '.config', 'opito');
 const CONFIG_FILE = join(CONFIG_DIR, 'config.json');

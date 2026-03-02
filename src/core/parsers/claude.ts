@@ -1,6 +1,6 @@
 import YAML from 'yaml';
 import type { CommandConfig, ParsedFrontmatter } from '../../types/index.js';
-import { listMarkdownFiles, readFileContent } from '../../utils/fs.js';
+import { listMarkdownFiles, readFileContent, writeFileContent, ensureDir } from '../../utils/fs.js';
 import { join } from 'node:path';
 
 const FRONTMATTER_REGEX = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
@@ -59,5 +59,33 @@ export class ClaudeParser {
       frontmatter,
       sourcePath,
     };
+  }
+
+  async writeCommand(command: CommandConfig): Promise<void> {
+    await ensureDir(this.commandsPath);
+
+    const filePath = join(this.commandsPath, `${command.name}.md`);
+
+    const frontmatter: Record<string, unknown> = {
+      description: command.description,
+    };
+
+    // Preserve any additional frontmatter from the original command
+    if (command.frontmatter) {
+      for (const [key, value] of Object.entries(command.frontmatter)) {
+        if (key !== 'description') {
+          frontmatter[key] = value;
+        }
+      }
+    }
+
+    const content = `---\n${YAML.stringify(frontmatter)}---\n\n${command.content}\n`;
+
+    await writeFileContent(filePath, content);
+  }
+
+  async commandExists(name: string): Promise<boolean> {
+    const files = await listMarkdownFiles(this.commandsPath);
+    return files.includes(`${name}.md`);
   }
 }

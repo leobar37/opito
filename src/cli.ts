@@ -8,6 +8,7 @@ import {
 import {
   syncCopilotCommand,
   syncDroidCommand,
+  syncSkillsCommand,
 } from "./commands/index.js";
 import { listCommand } from "./commands/list.js";
 import { initCommand } from "./commands/init.js";
@@ -20,10 +21,10 @@ const cli = cac("opito");
 
 cli
   .command("sync [provider] [target]", "Sync commands between providers")
-  .option("--target, -t <target>", "Target provider (claude, opencode, copilot, droid)")
-  .option("--local, -l", "Sync to project-local directories (./.opencode/, ./.factory/, ./.github/)")
-  .option("--global, -g", "Sync to global config (~/.config/)", { default: true })
-  .option("--interactive, -i", "Run in interactive mode (select provider and target)")
+  .option("-t, --target <target>", "Target provider (claude, opencode, copilot, droid)")
+  .option("-l, --local", "Sync to project-local directories (./.opencode/, ./.factory/, ./.github/)")
+  .option("-g, --global", "Sync to global config (~/.config/)")
+  .option("-i, --interactive", "Run in interactive mode (select provider and target)")
   .option("--dry-run", "Show what would be synced without making changes")
   .option("--force", "Skip backup and overwrite existing commands")
   .option("--watch", "Watch for changes and sync automatically")
@@ -49,7 +50,7 @@ cli
 
       const provider = (providerArg || config.baseProvider) as Provider;
       const target = (options.target || targetArg) as Provider | undefined;
-      const scope: Scope = options.local ? 'local' : 'global';
+      const scope: Scope = options.local ? 'local' : (options.global === false ? 'local' : 'global');
 
       if (options.interactive || !target) {
         await unifiedSyncCommand(config, {
@@ -205,6 +206,44 @@ cli
     try {
       const config = await configManager.load();
       await setBaseCommand(config, { provider });
+    } catch (error) {
+      logger.error(error instanceof Error ? error.message : "Unknown error");
+      process.exit(1);
+    }
+  });
+
+cli
+  .command("sync-skills", "Sync skills between providers (Claude, Droid, OpenCode)")
+  .option("--from <provider>", "Source provider: claude, droid, or opencode")
+  .option("--to <provider>", "Target provider: claude, droid, or opencode")
+  .option("--dry-run", "Show what would be synced without making changes")
+  .option("--force", "Skip backup and overwrite existing skills")
+  .option("--watch", "Watch for changes and sync automatically")
+  .option("--filter <skills>", "Comma-separated list of skills to sync")
+  .example("opito sync-skills --from claude --to droid       # Sync Claude skills to Droid")
+  .example("opito sync-skills --from droid --to opencode     # Sync Droid skills to OpenCode")
+  .example("opito sync-skills --from claude --to opencode --dry-run  # Preview changes")
+  .example("opito sync-skills --from claude --to droid --watch       # Watch mode")
+  .action(async (options: {
+    from?: string;
+    to?: string;
+    dryRun?: boolean;
+    force?: boolean;
+    watch?: boolean;
+    filter?: string;
+  }) => {
+    try {
+      const config = await configManager.load();
+      await syncSkillsCommand(config, {
+        from: options.from as 'claude' | 'droid' | 'opencode' | undefined,
+        to: options.to as 'claude' | 'droid' | 'opencode' | undefined,
+        dryRun: options.dryRun,
+        force: options.force,
+        watch: options.watch,
+        filter: options.filter
+          ? options.filter.split(",").map((f: string) => f.trim())
+          : undefined,
+      });
     } catch (error) {
       logger.error(error instanceof Error ? error.message : "Unknown error");
       process.exit(1);
