@@ -1,12 +1,12 @@
 /**
  * Skill converter for transforming skills between different provider formats
- * 
+ *
  * Rule: If strategy mapping is not possible, sync with full permissions
  */
 import YAML from 'yaml';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import type { SkillConfig, SkillFrontmatter, SkillProvider } from '../../types/index.js';
+import { mkdir, writeFile, readdir, readFile, stat, copyFile } from 'node:fs/promises';
+import { join, dirname } from 'node:path';
+import type { SkillConfig, SkillFrontmatter, SkillProvider, CodexSkillFrontmatter } from '../../types/index.js';
 
 export class SkillConverter {
   /**
@@ -45,6 +45,8 @@ export class SkillConverter {
     switch (to) {
       case 'claude':
         return this.toClaudeFormat(frontmatter, from, base);
+      case 'codex':
+        return this.toCodexFormat(frontmatter, from, base);
       case 'droid':
         return this.toDroidFormat(frontmatter, from, base);
       case 'opencode':
@@ -78,8 +80,8 @@ export class SkillConverter {
       return base;
     }
 
-    if (from === 'opencode') {
-      // OpenCode doesn't have tool restrictions in frontmatter
+    if (from === 'opencode' || from === 'codex') {
+      // OpenCode and Codex don't have tool restrictions in frontmatter
       // Use full permissions
       return base;
     }
@@ -94,6 +96,24 @@ export class SkillConverter {
 
     // Full permissions
     return base;
+  }
+
+  /**
+   * Convert to Codex format
+   */
+  private toCodexFormat(
+    frontmatter: SkillFrontmatter,
+    from: SkillProvider,
+    base: SkillFrontmatter
+  ): CodexSkillFrontmatter {
+    const codexFrontmatter = frontmatter as CodexSkillFrontmatter;
+
+    return {
+      ...base,
+      policy: codexFrontmatter.policy,
+      dependencies: codexFrontmatter.dependencies,
+      interface: codexFrontmatter.interface,
+    };
   }
 
   /**
@@ -166,11 +186,13 @@ export class SkillConverter {
 
   /**
    * Write a skill to disk in the target provider format
+   * Also copies all supporting files from the source skill directory
    */
   async writeSkill(
     skill: SkillConfig,
     to: SkillProvider,
-    skillsPath: string
+    skillsPath: string,
+    sourceSkillPath?: string,
   ): Promise<void> {
     const skillDir = join(skillsPath, skill.name);
     await mkdir(skillDir, { recursive: true });
@@ -179,6 +201,40 @@ export class SkillConverter {
     const content = this.serializeSkill(skill, to);
 
     await writeFile(skillFile, content);
+
+    // Copy supporting files if source path is provided
+    if (sourceSkillPath) {
+      await this.copySkillDirectory(sourceSkillPath, skillDir);
+    }
+  }
+
+  /**
+   * Copy all files from source skill directory to target
+   * Preserves directory structure
+   */
+  private async copySkillDirectory(
+    sourcePath: string,
+    targetPath: string,
+  ): Promise<void> {
+    try {
+      const entries = await readdir(sourcePath, { withFileTypes: true });
+
+      for (const entry of entries) {
+        const sourceFile = join(sourcePath, entry.name);
+        const targetFile = join(targetPath, entry.name);
+
+        if (entry.isDirectory()) {
+          // Recursively copy subdirectories
+          await mkdir(targetFile, { recursive: true });
+          await this.copySkillDirectory(sourceFile, targetFile);
+        } else if (entry.isFile() && entry.name !== 'SKILL.md') {
+          // Copy files except SKILL.md (which was already written)
+          await copyFile(sourceFile, targetFile);
+        }
+      }
+    } catch {
+      // Source directory doesn't exist or can't be read, skip
+    }
   }
 
   /**
@@ -196,6 +252,10 @@ export class SkillConverter {
         if (skill.frontmatter.allowedTools !== undefined) {
           frontmatter['allowed-tools'] = skill.frontmatter.allowedTools;
         }
+        break;
+      case 'codex':
+        // Codex uses standard agentskills.io format
+        // Additional metadata goes in agents/openai.yaml, not SKILL.md frontmatter
         break;
       case 'droid':
         if (skill.frontmatter.userInvocable !== undefined) {

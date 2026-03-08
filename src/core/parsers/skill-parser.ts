@@ -72,15 +72,25 @@ export abstract class SkillParser {
     }
 
     let rawFrontmatter: Record<string, unknown>;
+    let parseError = false;
     try {
       rawFrontmatter = YAML.parse(frontmatterText) || {};
     } catch {
       rawFrontmatter = {};
+      parseError = true;
     }
 
-    // Validate required fields
+    // Extract name and description
     const name = String(rawFrontmatter.name || dirName);
-    const description = String(rawFrontmatter.description || '');
+    let description = String(rawFrontmatter.description || '');
+
+    // Fallback: if YAML parsing failed or description is empty, try to extract from raw text
+    if (parseError || !description) {
+      const descMatch = frontmatterText.match(/^description:\s*(.+)$/m);
+      if (descMatch && descMatch[1]) {
+        description = descMatch[1].trim();
+      }
+    }
 
     if (!description) {
       return null;

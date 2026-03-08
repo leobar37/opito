@@ -1,12 +1,21 @@
 /**
  * Configuration manager
  */
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, readdir, access } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 import type { OpitoConfig, SkillProvider } from '../types/index.js';
+
+/**
+ * Result of detecting local skills
+ */
+export interface LocalSkillsDetection {
+  hasLocalSkills: boolean;
+  providers: SkillProvider[];
+  skillsCount: Record<SkillProvider, number>;
+}
 
 const DEFAULT_CONFIG: OpitoConfig = {
   claude: {
@@ -41,6 +50,8 @@ export function getSkillsPath(provider: SkillProvider, scope: 'local' | 'global'
     switch (provider) {
       case 'claude':
         return resolve(cwd(), '.claude', 'skills');
+      case 'codex':
+        return resolve(cwd(), '.agents', 'skills');
       case 'droid':
         return resolve(cwd(), '.factory', 'skills');
       case 'opencode':
@@ -53,6 +64,8 @@ export function getSkillsPath(provider: SkillProvider, scope: 'local' | 'global'
   switch (provider) {
     case 'claude':
       return join(homedir(), '.claude', 'skills');
+    case 'codex':
+      return join(homedir(), '.codex', 'skills');
     case 'droid':
       return join(homedir(), '.factory', 'skills');
     case 'opencode':
@@ -60,6 +73,45 @@ export function getSkillsPath(provider: SkillProvider, scope: 'local' | 'global'
     default:
       return join(homedir(), '.config', 'opencode', 'skills');
   }
+}
+
+/**
+ * Detect local skills in the current working directory
+ * Returns information about which providers have local skills
+ */
+export async function detectLocalSkills(): Promise<LocalSkillsDetection> {
+  const providers: SkillProvider[] = ['claude', 'codex', 'droid', 'opencode'];
+  const detected: SkillProvider[] = [];
+  const skillsCount: Record<SkillProvider, number> = {
+    claude: 0,
+    codex: 0,
+    droid: 0,
+    opencode: 0,
+  };
+
+  for (const provider of providers) {
+    const localPath = getSkillsPath(provider, 'local');
+    try {
+      await access(localPath);
+      const entries = await readdir(localPath, { withFileTypes: true });
+      const skillDirs = entries.filter(
+        (entry) => entry.isDirectory() && !entry.name.startsWith('.'),
+      );
+
+      if (skillDirs.length > 0) {
+        detected.push(provider);
+        skillsCount[provider] = skillDirs.length;
+      }
+    } catch {
+      // Directory doesn't exist or can't be read, skip
+    }
+  }
+
+  return {
+    hasLocalSkills: detected.length > 0,
+    providers: detected,
+    skillsCount,
+  };
 }
 
 const CONFIG_DIR = join(homedir(), '.config', 'opito');

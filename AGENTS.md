@@ -213,15 +213,34 @@ export class ClassName {
 - **Note:** No test/lint CI — only publish workflow exists
 
 ## Anti-Patterns (THIS PROJECT)
+
 - **Deprecated commands:** `sync-copilot` and `sync-droid` are deprecated. Use unified `opito sync` command instead.
 - **Package.json issues:** `module` field points to `src/cli.ts` (non-standard — should point to built JS). No `types` field for published package.
 - **CI gaps:** No test/lint workflow — only publish exists.
 
-## External Resources
+## Agent Preferences
 - **Workflow:** `.github/workflows/publish.yml` — triggers on tag push (v*)
 - **Build:** `tsc` (TypeScript compiler)
 - **Publish:** npm publish with NPM_TOKEN secret
 - **Note:** No test/lint CI — only publish workflow exists
+
+## Agent Preferences
+
+- **Never read profiles/light/AGENTS.md by default** — Only read profile-specific AGENTS.md files when explicitly requested by the user.
+- **No test proposals by default** — Do not suggest or propose tests unless the user explicitly asks for them.
+
+## HIERARCHY
+
+This project uses hierarchical AGENTS.md files:
+
+```
+./AGENTS.md                 # Root: Build commands, global conventions
+├── src/commands/AGENTS.md  # CLI command implementations
+└── src/core/parsers/       # Parser patterns & provider implementations
+    └── AGENTS.md
+```
+
+**Navigation:** Start here for build/test commands and global patterns. See subdir AGENTS.md for module-specific details.
 
 ## External Resources
 

@@ -1,12 +1,15 @@
 /**
  * Sync skills command
  */
+import { dirname } from "node:path";
 import { BackupManager } from "../utils/backup.js";
 import { logger } from "../utils/logger.js";
-import { getSkillsPath } from "../utils/config.js";
+import { getSkillsPath, detectLocalSkills, type LocalSkillsDetection } from "../utils/config.js";
+import { promptForSkillSyncOptions } from "../utils/prompts.js";
 import { ClaudeSkillParser } from "../core/parsers/claude-skill-parser.js";
 import { DroidSkillParser } from "../core/parsers/droid-skill-parser.js";
 import { OpencodeSkillParser } from "../core/parsers/opencode-skill-parser.js";
+import { CodexSkillParser } from "../core/parsers/codex-skill-parser.js";
 import { SkillConverter } from "../core/converters/skill-converter.js";
 import type {
   SkillConfig,
@@ -21,39 +24,68 @@ export interface SyncSkillsCommandOptions extends SyncSkillsOptions {
   from?: SkillProvider;
   to?: SkillProvider;
   watch?: boolean;
+  interactive?: boolean;
+  scope?: 'local' | 'global';
 }
 
 export async function syncSkillsCommand(
   config: OpitoConfig,
   options: SyncSkillsCommandOptions,
 ): Promise<void> {
-  // Validate providers
-  if (!options.from) {
-    logger.error("Source provider is required. Use --from <provider>");
-    process.exit(1);
+  let from: SkillProvider;
+  let to: SkillProvider;
+  let scope: 'local' | 'global';
+
+  // Interactive mode
+  if (options.interactive || (!options.from && !options.to)) {
+    // Detect local skills before showing prompts
+    const localDetection = await detectLocalSkills();
+    
+    if (localDetection.hasLocalSkills) {
+      logger.info(`📁 Local skills detected in this project:`);
+      for (const provider of localDetection.providers) {
+        logger.info(`   • ${provider}: ${localDetection.skillsCount[provider]} skill(s)`);
+      }
+      logger.newline();
+    }
+    
+    const interactiveOptions = await promptForSkillSyncOptions(localDetection);
+    from = interactiveOptions.from;
+    to = interactiveOptions.to;
+    scope = interactiveOptions.scope;
+  } else {
+    // Validate providers from CLI
+    if (!options.from) {
+      logger.error("Source provider is required. Use --from <provider> or --interactive");
+      process.exit(1);
+    }
+
+    if (!options.to) {
+      logger.error("Target provider is required. Use --to <provider> or --interactive");
+      process.exit(1);
+    }
+
+    if (!isValidSkillProvider(options.from)) {
+      logger.error(`Invalid source provider: ${options.from}`);
+      process.exit(1);
+    }
+
+    if (!isValidSkillProvider(options.to)) {
+      logger.error(`Invalid target provider: ${options.to}`);
+      process.exit(1);
+    }
+
+    from = options.from;
+    to = options.to;
+    scope = options.scope || 'global';
   }
 
-  if (!options.to) {
-    logger.error("Target provider is required. Use --to <provider>");
-    process.exit(1);
-  }
-
-  if (!isValidSkillProvider(options.from)) {
-    logger.error(`Invalid source provider: ${options.from}`);
-    process.exit(1);
-  }
-
-  if (!isValidSkillProvider(options.to)) {
-    logger.error(`Invalid target provider: ${options.to}`);
-    process.exit(1);
-  }
-
-  if (options.from === options.to) {
+  if (from === to) {
     logger.error("Source and target providers cannot be the same");
     process.exit(1);
   }
 
-  logger.info(`Syncing skills from ${options.from} to ${options.to}...`);
+  logger.info(`Syncing skills from ${from} to ${to} (${scope} scope)...`);
 
   const syncOptions: SyncSkillsOptions = {
     dryRun: options.dryRun,
@@ -62,9 +94,9 @@ export async function syncSkillsCommand(
   };
 
   if (options.watch) {
-    await runWatchMode(config, options.from, options.to, syncOptions);
+    await runWatchMode(config, from, to, scope, syncOptions);
   } else {
-    await runSingleSync(config, options.from, options.to, syncOptions);
+    await runSingleSync(config, from, to, scope, syncOptions);
   }
 }
 
@@ -72,9 +104,10 @@ async function runSingleSync(
   config: OpitoConfig,
   from: SkillProvider,
   to: SkillProvider,
+  scope: 'local' | 'global',
   options: SyncSkillsOptions,
 ): Promise<void> {
-  const results = await performSync(config, from, to, options);
+  const results = await performSync(config, from, to, scope, options);
 
   const report: SyncSkillsReport = {
     total: results.length,
@@ -96,12 +129,13 @@ async function runWatchMode(
   config: OpitoConfig,
   from: SkillProvider,
   to: SkillProvider,
+  scope: 'local' | 'global',
   options: SyncSkillsOptions,
 ): Promise<void> {
   logger.info("Starting watch mode...");
 
   const { watch } = await import("chokidar");
-  const sourcePath = getSkillsPath(from, "global");
+  const sourcePath = getSkillsPath(from, scope);
 
   const watcher = watch(sourcePath, {
     persistent: true,
@@ -111,7 +145,7 @@ async function runWatchMode(
 
   const syncAndReport = async () => {
     logger.info("Changes detected, syncing...");
-    const results = await performSync(config, from, to, options);
+    const results = await performSync(config, from, to, scope, options);
 
     const report: SyncSkillsReport = {
       total: results.length,
@@ -130,7 +164,7 @@ async function runWatchMode(
   watcher.on("unlink", syncAndReport);
 
   // Initial sync
-  await performSync(config, from, to, options);
+  await performSync(config, from, to, scope, options);
 
   logger.info("Watching for changes... (Press Ctrl+C to stop)");
   await new Promise(() => {});
@@ -140,10 +174,11 @@ async function performSync(
   config: OpitoConfig,
   from: SkillProvider,
   to: SkillProvider,
+  scope: 'local' | 'global',
   options: SyncSkillsOptions,
 ): Promise<SyncSkillResult[]> {
-  const sourcePath = getSkillsPath(from, "global");
-  const targetPath = getSkillsPath(to, "global");
+  const sourcePath = getSkillsPath(from, scope);
+  const targetPath = getSkillsPath(to, scope);
 
   const sourceParser = createSkillParser(from, sourcePath);
   const converter = new SkillConverter();
@@ -184,6 +219,7 @@ async function performSync(
           sourceSkill,
           from,
           to,
+          scope,
           targetPath,
           converter,
           options,
@@ -223,6 +259,7 @@ async function syncSingleSkill(
   sourceSkill: SkillConfig,
   from: SkillProvider,
   to: SkillProvider,
+  scope: 'local' | 'global',
   targetPath: string,
   converter: SkillConverter,
   options: SyncSkillsOptions,
@@ -240,7 +277,9 @@ async function syncSingleSkill(
     };
   }
 
-  await converter.writeSkill(convertedSkill, to, targetPath);
+  // Get the source skill directory path
+  const sourceSkillPath = dirname(sourceSkill.sourcePath);
+  await converter.writeSkill(convertedSkill, to, targetPath, sourceSkillPath);
 
   return {
     success: true,
@@ -253,6 +292,8 @@ function createSkillParser(provider: SkillProvider, path: string) {
   switch (provider) {
     case "claude":
       return new ClaudeSkillParser(path);
+    case "codex":
+      return new CodexSkillParser(path);
     case "droid":
       return new DroidSkillParser(path);
     case "opencode":
@@ -263,5 +304,5 @@ function createSkillParser(provider: SkillProvider, path: string) {
 }
 
 function isValidSkillProvider(name: string): name is SkillProvider {
-  return ["claude", "droid", "opencode"].includes(name);
+  return ["claude", "codex", "droid", "opencode"].includes(name);
 }

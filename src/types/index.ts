@@ -153,4 +153,45 @@ export interface SyncSkillsReport {
 /**
  * Providers that support skills
  */
-export type SkillProvider = 'claude' | 'droid' | 'opencode';
+export type SkillProvider = 'claude' | 'droid' | 'opencode' | 'codex';
+
+/**
+ * Codex-specific tool dependency configuration
+ */
+export interface CodexToolDependency {
+  type: string;
+  value: string;
+  description?: string;
+  transport?: string;
+  url?: string;
+}
+
+/**
+ * Codex-specific interface configuration for UI metadata
+ */
+export interface CodexInterfaceConfig {
+  displayName?: string;
+  shortDescription?: string;
+  iconSmall?: string;
+  iconLarge?: string;
+  brandColor?: string;
+  defaultPrompt?: string;
+}
+
+/**
+ * Codex-specific policy configuration
+ */
+export interface CodexPolicyConfig {
+  allowImplicitInvocation?: boolean;
+}
+
+/**
+ * Extended skill frontmatter for Codex with agents/openai.yaml support
+ */
+export interface CodexSkillFrontmatter extends SkillFrontmatter {
+  policy?: CodexPolicyConfig;
+  dependencies?: {
+    tools?: CodexToolDependency[];
+  };
+  interface?: CodexInterfaceConfig;
+}

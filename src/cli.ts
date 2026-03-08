@@ -1,3 +1,5 @@
+#!/usr/bin/env bun
+
 import { cac } from "cac";
 import { configManager } from "./utils/config.js";
 import { logger } from "./utils/logger.js";
@@ -216,17 +218,23 @@ cli
   .command("sync-skills", "Sync skills between providers (Claude, Droid, OpenCode)")
   .option("--from <provider>", "Source provider: claude, droid, or opencode")
   .option("--to <provider>", "Target provider: claude, droid, or opencode")
+  .option("-i, --interactive", "Run in interactive mode (select providers and scope)")
+  .option("--scope <scope>", "Sync scope: local or global", { default: "global" })
   .option("--dry-run", "Show what would be synced without making changes")
   .option("--force", "Skip backup and overwrite existing skills")
   .option("--watch", "Watch for changes and sync automatically")
   .option("--filter <skills>", "Comma-separated list of skills to sync")
+  .example("opito sync-skills --interactive                  # Interactive mode")
   .example("opito sync-skills --from claude --to droid       # Sync Claude skills to Droid")
+  .example("opito sync-skills --from claude --to droid --scope local # Sync locally")
   .example("opito sync-skills --from droid --to opencode     # Sync Droid skills to OpenCode")
   .example("opito sync-skills --from claude --to opencode --dry-run  # Preview changes")
   .example("opito sync-skills --from claude --to droid --watch       # Watch mode")
   .action(async (options: {
     from?: string;
     to?: string;
+    interactive?: boolean;
+    scope?: string;
     dryRun?: boolean;
     force?: boolean;
     watch?: boolean;
@@ -237,6 +245,8 @@ cli
       await syncSkillsCommand(config, {
         from: options.from as 'claude' | 'droid' | 'opencode' | undefined,
         to: options.to as 'claude' | 'droid' | 'opencode' | undefined,
+        interactive: options.interactive,
+        scope: options.scope as 'local' | 'global' | undefined,
         dryRun: options.dryRun,
         force: options.force,
         watch: options.watch,
