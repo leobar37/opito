@@ -83,7 +83,7 @@ opito list --source opencode
 ## Project Structure
 
 ```
-DOC/
+doc/
 ├── README.md                 # This file
 ├── commands/                 # Command documentation
 │   ├── README.md            # Command index
