@@ -55,6 +55,19 @@ class Logger {
     this.log('debug', message);
   }
 
+  reportAgents(results: { total: number; created: number; updated: number; skipped: number; removed: number; errors: number }): void {
+    this.newline();
+    this.raw(pc.bold('📊 Agents Sync Report'));
+    this.raw(pc.gray('─'.repeat(40)));
+    this.raw(`${pc.blue('Total:')}     ${results.total}`);
+    this.raw(`${pc.green('Created:')}   ${results.created}`);
+    this.raw(`${pc.yellow('Updated:')}   ${results.updated}`);
+    this.raw(`${pc.cyan('Skipped:')}   ${results.skipped}`);
+    this.raw(`${pc.yellow('Removed:')}   ${results.removed}`);
+    this.raw(`${pc.red('Errors:')}    ${results.errors}`);
+    this.raw(pc.gray('─'.repeat(40)));
+  }
+
   report(results: { total: number; created: number; updated: number; errors: number }): void {
     this.newline();
     this.raw(pc.bold('📊 Sync Report'));

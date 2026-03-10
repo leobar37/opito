@@ -11,7 +11,11 @@ import {
   syncCopilotCommand,
   syncDroidCommand,
   syncSkillsCommand,
+  syncToClaudeCommand,
+  providerCommand,
+  setupProfileCommand,
 } from "./commands/index.js";
+import { dashboardCommand } from "./commands/dashboard.js";
 import { listCommand } from "./commands/list.js";
 import { initCommand } from "./commands/init.js";
 import { doctorCommand } from "./commands/doctor.js";
@@ -260,11 +264,100 @@ cli
     }
   });
 
+cli
+  .command("sync-to-claude [path]", "Sync AGENTS.md to CLAUDE.md recursively")
+  .option("--dry-run", "Show what would be synced without making changes")
+  .option("--watch", "Watch for changes and sync automatically")
+  .option("--remove", "Remove orphaned CLAUDE.md files (without AGENTS.md)")
+  .option("--force", "Overwrite existing CLAUDE.md files")
+  .option("--no-header", "Skip auto-generated header in CLAUDE.md")
+  .example("opito sync-to-claude                       # Sync in current directory")
+  .example("opito sync-to-claude ./my-project          # Sync in specific directory")
+  .example("opito sync-to-claude --dry-run             # Preview changes")
+  .example("opito sync-to-claude --watch               # Watch for changes")
+  .example("opito sync-to-claude --remove              # Remove orphaned CLAUDE.md")
+  .action(async (path: string | undefined, options: {
+    dryRun?: boolean;
+    watch?: boolean;
+    remove?: boolean;
+    force?: boolean;
+    noHeader?: boolean;
+  }) => {
+    try {
+      const projectPath = path || process.cwd();
+      await syncToClaudeCommand(projectPath, {
+        dryRun: options.dryRun,
+        watch: options.watch,
+        remove: options.remove,
+        force: options.force,
+        noHeader: options.noHeader,
+      });
+    } catch (error) {
+      logger.error(error instanceof Error ? error.message : "Unknown error");
+      process.exit(1);
+    }
+  });
+
+cli
+  .command("dashboard", "Open OPITO dashboard (TUI)")
+  .action(async () => {
+    try {
+      await dashboardCommand();
+    } catch (error) {
+      logger.error(error instanceof Error ? error.message : "Unknown error");
+      process.exit(1);
+    }
+  });
+
+cli
+  .command("glm [cli]", "Launch with GLM provider")
+  .action(async (cliArg: string | undefined) => {
+    try {
+      await providerCommand("glm", cliArg);
+    } catch (error) {
+      logger.error(error instanceof Error ? error.message : "Unknown error");
+      process.exit(1);
+    }
+  });
+
+cli
+  .command("kimi [cli]", "Launch with Kimi provider")
+  .action(async (cliArg: string | undefined) => {
+    try {
+      await providerCommand("kimi", cliArg);
+    } catch (error) {
+      logger.error(error instanceof Error ? error.message : "Unknown error");
+      process.exit(1);
+    }
+  });
+
+cli
+  .command("minimax [cli]", "Launch with MiniMax provider")
+  .action(async (cliArg: string | undefined) => {
+    try {
+      await providerCommand("minimax", cliArg);
+    } catch (error) {
+      logger.error(error instanceof Error ? error.message : "Unknown error");
+      process.exit(1);
+    }
+  });
+
+cli
+  .command("profile setup <provider>", "Configure a new provider profile")
+  .action(async (provider: string) => {
+    try {
+      await setupProfileCommand(provider);
+    } catch (error) {
+      logger.error(error instanceof Error ? error.message : "Unknown error");
+      process.exit(1);
+    }
+  });
+
 cli.help();
 cli.version("1.0.0");
 
 const parsed = cli.parse();
 
-if (!parsed.args.length && !parsed.options.help && !parsed.options.version) {
+if (!parsed.args.length && !parsed.options.help && !parsed.options.version && process.argv.length <= 2) {
   cli.outputHelp();
 }

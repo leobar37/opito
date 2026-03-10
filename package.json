@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",
+    "@opentui/core": "^0.1.86",
     "cac": "^6.7.14",
     "chokidar": "^5.0.0",
     "picocolors": "^1.1.1",
