@@ -195,3 +195,51 @@ export interface CodexSkillFrontmatter extends SkillFrontmatter {
   };
   interface?: CodexInterfaceConfig;
 }
+
+export type AgentProvider = 'claude' | 'opencode' | 'droid';
+
+export interface AgentConfig {
+  name: string;
+  description: string;
+  content: string;
+  sourcePath: string;
+  frontmatter: AgentFrontmatter;
+}
+
+export interface AgentFrontmatter {
+  name: string;
+  description: string;
+  instructions?: string;
+  enabled?: boolean;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  tools?: string[];
+  userInvocable?: boolean;
+  disableModelInvocation?: boolean;
+  license?: string;
+  compatibility?: string;
+  metadata?: Record<string, string>;
+}
+
+export interface SyncAgentsOptions extends SyncOptions {
+  from?: AgentProvider;
+  to?: AgentProvider;
+}
+
+export interface SyncAgentResult {
+  success: boolean;
+  agent: string;
+  action: 'created' | 'updated' | 'skipped' | 'removed' | 'error';
+  error?: string;
+}
+
+export interface SyncAgentsReport {
+  total: number;
+  created: number;
+  updated: number;
+  skipped: number;
+  removed: number;
+  errors: number;
+  results: SyncAgentResult[];
+}

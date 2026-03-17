@@ -3,17 +3,30 @@
  *
  * Rule: If strategy mapping is not possible, sync with full permissions
  */
-import YAML from 'yaml';
-import { mkdir, writeFile, readdir, readFile, stat, copyFile } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
-import type { SkillConfig, SkillFrontmatter, SkillProvider, CodexSkillFrontmatter } from '../../types/index.js';
+import { copyFile, mkdir, readdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import YAML from "yaml";
+import type {
+  CodexSkillFrontmatter,
+  SkillConfig,
+  SkillFrontmatter,
+  SkillProvider,
+} from "../../types/index.js";
 
 export class SkillConverter {
   /**
    * Convert a skill from one provider format to another
    */
-  convert(skill: SkillConfig, from: SkillProvider, to: SkillProvider): SkillConfig {
-    const convertedFrontmatter = this.convertFrontmatter(skill.frontmatter, from, to);
+  convert(
+    skill: SkillConfig,
+    from: SkillProvider,
+    to: SkillProvider,
+  ): SkillConfig {
+    const convertedFrontmatter = this.convertFrontmatter(
+      skill.frontmatter,
+      from,
+      to,
+    );
 
     return {
       name: skill.name,
@@ -30,7 +43,7 @@ export class SkillConverter {
   private convertFrontmatter(
     frontmatter: SkillFrontmatter,
     from: SkillProvider,
-    to: SkillProvider
+    to: SkillProvider,
   ): SkillFrontmatter {
     const base: SkillFrontmatter = {
       name: frontmatter.name,
@@ -43,13 +56,13 @@ export class SkillConverter {
     }
 
     switch (to) {
-      case 'claude':
+      case "claude":
         return this.toClaudeFormat(frontmatter, from, base);
-      case 'codex':
+      case "codex":
         return this.toCodexFormat(frontmatter, from, base);
-      case 'droid':
+      case "droid":
         return this.toDroidFormat(frontmatter, from, base);
-      case 'opencode':
+      case "opencode":
         return this.toOpencodeFormat(frontmatter, from, base);
       default:
         return base;
@@ -62,13 +75,13 @@ export class SkillConverter {
   private toClaudeFormat(
     frontmatter: SkillFrontmatter,
     from: SkillProvider,
-    base: SkillFrontmatter
+    base: SkillFrontmatter,
   ): SkillFrontmatter {
     // Claude uses allowed-tools
     // If coming from Droid with disableModelInvocation=true, no tools allowed
     // Otherwise, full permissions (no allowed-tools = all tools)
 
-    if (from === 'droid') {
+    if (from === "droid") {
       if (frontmatter.disableModelInvocation === true) {
         // Model can't invoke = no tools allowed
         return {
@@ -80,7 +93,7 @@ export class SkillConverter {
       return base;
     }
 
-    if (from === 'opencode' || from === 'codex') {
+    if (from === "opencode" || from === "codex") {
       // OpenCode and Codex don't have tool restrictions in frontmatter
       // Use full permissions
       return base;
@@ -104,7 +117,7 @@ export class SkillConverter {
   private toCodexFormat(
     frontmatter: SkillFrontmatter,
     from: SkillProvider,
-    base: SkillFrontmatter
+    base: SkillFrontmatter,
   ): CodexSkillFrontmatter {
     const codexFrontmatter = frontmatter as CodexSkillFrontmatter;
 
@@ -122,13 +135,16 @@ export class SkillConverter {
   private toDroidFormat(
     frontmatter: SkillFrontmatter,
     from: SkillProvider,
-    base: SkillFrontmatter
+    base: SkillFrontmatter,
   ): SkillFrontmatter {
     // Droid uses user-invocable and disable-model-invocation
 
-    if (from === 'claude') {
+    if (from === "claude") {
       // If Claude has allowedTools and it's empty, disable model invocation
-      if (frontmatter.allowedTools !== undefined && frontmatter.allowedTools.length === 0) {
+      if (
+        frontmatter.allowedTools !== undefined &&
+        frontmatter.allowedTools.length === 0
+      ) {
         return {
           ...base,
           userInvocable: true,
@@ -143,7 +159,7 @@ export class SkillConverter {
       };
     }
 
-    if (from === 'opencode') {
+    if (from === "opencode") {
       // OpenCode doesn't have invocation restrictions
       // Use full permissions
       return {
@@ -167,7 +183,7 @@ export class SkillConverter {
   private toOpencodeFormat(
     frontmatter: SkillFrontmatter,
     from: SkillProvider,
-    base: SkillFrontmatter
+    base: SkillFrontmatter,
   ): SkillFrontmatter {
     // OpenCode uses license, compatibility, metadata
     // No invocation restrictions in frontmatter (those go in opencode.json)
@@ -179,7 +195,7 @@ export class SkillConverter {
       compatibility: frontmatter.compatibility ?? from,
       metadata: frontmatter.metadata ?? {
         source: from,
-        converted: 'true',
+        converted: "true",
       },
     };
   }
@@ -197,7 +213,7 @@ export class SkillConverter {
     const skillDir = join(skillsPath, skill.name);
     await mkdir(skillDir, { recursive: true });
 
-    const skillFile = join(skillDir, 'SKILL.md');
+    const skillFile = join(skillDir, "SKILL.md");
     const content = this.serializeSkill(skill, to);
 
     await writeFile(skillFile, content);
@@ -227,7 +243,7 @@ export class SkillConverter {
           // Recursively copy subdirectories
           await mkdir(targetFile, { recursive: true });
           await this.copySkillDirectory(sourceFile, targetFile);
-        } else if (entry.isFile() && entry.name !== 'SKILL.md') {
+        } else if (entry.isFile() && entry.name !== "SKILL.md") {
           // Copy files except SKILL.md (which was already written)
           await copyFile(sourceFile, targetFile);
         }
@@ -248,32 +264,33 @@ export class SkillConverter {
 
     // Add provider-specific fields
     switch (to) {
-      case 'claude':
+      case "claude":
         if (skill.frontmatter.allowedTools !== undefined) {
-          frontmatter['allowed-tools'] = skill.frontmatter.allowedTools;
+          frontmatter["allowed-tools"] = skill.frontmatter.allowedTools;
         }
         break;
-      case 'codex':
+      case "codex":
         // Codex uses standard agentskills.io format
         // Additional metadata goes in agents/openai.yaml, not SKILL.md frontmatter
         break;
-      case 'droid':
+      case "droid":
         if (skill.frontmatter.userInvocable !== undefined) {
-          frontmatter['user-invocable'] = skill.frontmatter.userInvocable;
+          frontmatter["user-invocable"] = skill.frontmatter.userInvocable;
         }
         if (skill.frontmatter.disableModelInvocation !== undefined) {
-          frontmatter['disable-model-invocation'] = skill.frontmatter.disableModelInvocation;
+          frontmatter["disable-model-invocation"] =
+            skill.frontmatter.disableModelInvocation;
         }
         break;
-      case 'opencode':
+      case "opencode":
         if (skill.frontmatter.license !== undefined) {
-          frontmatter['license'] = skill.frontmatter.license;
+          frontmatter["license"] = skill.frontmatter.license;
         }
         if (skill.frontmatter.compatibility !== undefined) {
-          frontmatter['compatibility'] = skill.frontmatter.compatibility;
+          frontmatter["compatibility"] = skill.frontmatter.compatibility;
         }
         if (skill.frontmatter.metadata !== undefined) {
-          frontmatter['metadata'] = skill.frontmatter.metadata;
+          frontmatter["metadata"] = skill.frontmatter.metadata;
         }
         break;
     }

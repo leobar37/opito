@@ -11,6 +11,7 @@ import {
   syncCopilotCommand,
   syncDroidCommand,
   syncSkillsCommand,
+  syncAgentsCommand,
   syncToClaudeCommand,
   providerCommand,
   setupProfileCommand,
@@ -247,6 +248,52 @@ cli
     try {
       const config = await configManager.load();
       await syncSkillsCommand(config, {
+        from: options.from as 'claude' | 'droid' | 'opencode' | undefined,
+        to: options.to as 'claude' | 'droid' | 'opencode' | undefined,
+        interactive: options.interactive,
+        scope: options.scope as 'local' | 'global' | undefined,
+        dryRun: options.dryRun,
+        force: options.force,
+        watch: options.watch,
+        filter: options.filter
+          ? options.filter.split(",").map((f: string) => f.trim())
+          : undefined,
+      });
+    } catch (error) {
+      logger.error(error instanceof Error ? error.message : "Unknown error");
+      process.exit(1);
+    }
+  });
+
+cli
+  .command("sync-agents", "Sync agents between providers (Claude, Droid, OpenCode)")
+  .option("--from <provider>", "Source provider: claude, droid, or opencode")
+  .option("--to <provider>", "Target provider: claude, droid, or opencode")
+  .option("-i, --interactive", "Run in interactive mode (select providers and scope)")
+  .option("--scope <scope>", "Sync scope: local or global", { default: "global" })
+  .option("--dry-run", "Show what would be synced without making changes")
+  .option("--force", "Skip backup and overwrite existing agents")
+  .option("--watch", "Watch for changes and sync automatically")
+  .option("--filter <agents>", "Comma-separated list of agents to sync")
+  .example("opito sync-agents --interactive                  # Interactive mode")
+  .example("opito sync-agents --from claude --to droid       # Sync Claude agents to Droid")
+  .example("opito sync-agents --from claude --to droid --scope local # Sync locally")
+  .example("opito sync-agents --from droid --to opencode     # Sync Droid agents to OpenCode")
+  .example("opito sync-agents --from claude --to opencode --dry-run  # Preview changes")
+  .example("opito sync-agents --from claude --to droid --watch       # Watch mode")
+  .action(async (options: {
+    from?: string;
+    to?: string;
+    interactive?: boolean;
+    scope?: string;
+    dryRun?: boolean;
+    force?: boolean;
+    watch?: boolean;
+    filter?: string;
+  }) => {
+    try {
+      const config = await configManager.load();
+      await syncAgentsCommand(config, {
         from: options.from as 'claude' | 'droid' | 'opencode' | undefined,
         to: options.to as 'claude' | 'droid' | 'opencode' | undefined,
         interactive: options.interactive,

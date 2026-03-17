@@ -1,7 +1,7 @@
 import { select, confirm, intro, outro } from '@clack/prompts';
-import type { Provider, Scope, SkillProvider } from '../types/index.js';
+import type { Provider, Scope, SkillProvider, AgentProvider } from '../types/index.js';
 import { PROVIDERS, getProviderDisplayName, getDefaultTarget } from '../core/providers.js';
-import type { LocalSkillsDetection } from './config.js';
+import type { LocalSkillsDetection, LocalAgentsDetection } from './config.js';
 
 // Skill providers info for interactive mode
 const SKILL_PROVIDERS = [
@@ -119,6 +119,121 @@ async function promptForSkillTarget(source: SkillProvider): Promise<SkillProvide
 
 function getSkillProviderDisplayName(name: SkillProvider): string {
   const provider = SKILL_PROVIDERS.find(p => p.name === name);
+  return provider?.displayName || name;
+}
+
+const AGENT_PROVIDERS = [
+  { name: 'claude' as AgentProvider, displayName: 'Claude Code', description: 'Claude Code agents from ~/.claude/agents/' },
+  { name: 'droid' as AgentProvider, displayName: 'Droid (Factory AI)', description: 'Factory AI Droid droids from ~/.factory/droids/' },
+  { name: 'opencode' as AgentProvider, displayName: 'OpenCode', description: 'OpenCode agents from ~/.config/opencode/agents/' },
+];
+
+export interface InteractiveAgentSyncOptions {
+  from: AgentProvider;
+  to: AgentProvider;
+  scope: 'local' | 'global';
+}
+
+export async function promptForAgentSyncOptions(
+  localDetection?: LocalAgentsDetection,
+): Promise<InteractiveAgentSyncOptions> {
+  intro('🔄 Opito Agents Sync');
+
+  const from = await promptForAgentProvider();
+  const to = await promptForAgentTarget(from);
+  const scope = await promptForAgentScope(localDetection);
+
+  outro('Configuration complete!');
+
+  return {
+    from,
+    to,
+    scope,
+  };
+}
+
+async function promptForAgentScope(
+  localDetection?: LocalAgentsDetection,
+): Promise<'local' | 'global'> {
+  const hasLocals = localDetection?.hasLocalAgents ?? false;
+  const defaultValue = hasLocals ? 'local' : 'global';
+
+  const result = await select({
+    message: 'Select sync scope:',
+    options: [
+      {
+        value: 'global',
+        label: 'Global',
+        hint: 'Sync to user home directory (~/.claude/agents/, ~/.factory/droids/, etc.)',
+      },
+      {
+        value: 'local',
+        label: 'Local',
+        hint: hasLocals
+          ? `📁 ${localDetection?.providers.length} provider(s) with local agents detected`
+          : 'Sync to current directory (./.claude/agents/, ./.factory/droids/, etc.)',
+      },
+    ],
+    initialValue: defaultValue,
+  });
+
+  if (typeof result !== 'string') {
+    throw new Error('Selection cancelled');
+  }
+
+  return result as 'local' | 'global';
+}
+
+async function promptForAgentProvider(): Promise<AgentProvider> {
+  const options = AGENT_PROVIDERS.map(p => ({
+    value: p.name,
+    label: p.displayName,
+    hint: p.description,
+  }));
+
+  const result = await select({
+    message: 'Select source provider:',
+    options,
+  });
+
+  if (typeof result !== 'string') {
+    throw new Error('Selection cancelled');
+  }
+
+  return result as AgentProvider;
+}
+
+async function promptForAgentTarget(source: AgentProvider): Promise<AgentProvider> {
+  const defaultTargets: Record<AgentProvider, AgentProvider> = {
+    claude: 'opencode',
+    droid: 'claude',
+    opencode: 'claude',
+  };
+  const defaultTarget = defaultTargets[source];
+
+  const otherProviders = AGENT_PROVIDERS.filter(p => p.name !== source);
+
+  const options = otherProviders.map(p => ({
+    value: p.name,
+    label: p.displayName,
+    hint: p.name === defaultTarget ? 'recommended' : undefined,
+  }));
+
+  const result = await select({
+    message: `Select target provider (syncing from ${getAgentProviderDisplayName(source)}):`,
+    options,
+    initialValue: defaultTarget,
+  });
+
+  if (typeof result !== 'string') {
+    throw new Error('Selection cancelled');
+  }
+
+  return result as AgentProvider;
+}
+
+function getAgentProviderDisplayName(name: AgentProvider): string {
+  const provider = AGENT_PROVIDERS.find(p => p.name === name);
   return provider?.displayName || name;
 }
 

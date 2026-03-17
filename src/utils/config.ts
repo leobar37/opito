@@ -6,7 +6,7 @@ import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
-import type { OpitoConfig, SkillProvider } from '../types/index.js';
+import type { OpitoConfig, SkillProvider, AgentProvider } from '../types/index.js';
 
 /**
  * Result of detecting local skills
@@ -15,6 +15,12 @@ export interface LocalSkillsDetection {
   hasLocalSkills: boolean;
   providers: SkillProvider[];
   skillsCount: Record<SkillProvider, number>;
+}
+
+export interface LocalAgentsDetection {
+  hasLocalAgents: boolean;
+  providers: AgentProvider[];
+  agentsCount: Record<AgentProvider, number>;
 }
 
 const DEFAULT_CONFIG: OpitoConfig = {
@@ -111,6 +117,66 @@ export async function detectLocalSkills(): Promise<LocalSkillsDetection> {
     hasLocalSkills: detected.length > 0,
     providers: detected,
     skillsCount,
+  };
+}
+
+export function getAgentsPath(provider: AgentProvider, scope: 'local' | 'global' = 'global'): string {
+  if (scope === 'local') {
+    switch (provider) {
+      case 'claude':
+        return resolve(cwd(), '.claude', 'agents');
+      case 'droid':
+        return resolve(cwd(), '.factory', 'droids');
+      case 'opencode':
+        return resolve(cwd(), '.opencode', 'agent');
+      default:
+        return resolve(cwd(), '.opencode', 'agent');
+    }
+  }
+
+  switch (provider) {
+    case 'claude':
+      return join(homedir(), '.claude', 'agents');
+    case 'droid':
+      return join(homedir(), '.factory', 'droids');
+    case 'opencode':
+      return join(homedir(), '.config', 'opencode', 'agent');
+    default:
+      return join(homedir(), '.config', 'opencode', 'agent');
+  }
+}
+
+export async function detectLocalAgents(): Promise<LocalAgentsDetection> {
+  const providers: AgentProvider[] = ['claude', 'droid', 'opencode'];
+  const detected: AgentProvider[] = [];
+  const agentsCount: Record<AgentProvider, number> = {
+    claude: 0,
+    droid: 0,
+    opencode: 0,
+  };
+
+  for (const provider of providers) {
+    const localPath = getAgentsPath(provider, 'local');
+    try {
+      await access(localPath);
+      const entries = await readdir(localPath, { withFileTypes: true });
+      const agentFiles = entries.filter(
+        (entry) => entry.isFile() && entry.name.endsWith('.md') && !entry.name.startsWith('.'),
+      );
+
+      if (agentFiles.length > 0) {
+        detected.push(provider);
+        agentsCount[provider] = agentFiles.length;
+      }
+    } catch {
+      // Directory doesn't exist or can't be read, skip
+    }
+  }
+
+  return {
+    hasLocalAgents: detected.length > 0,
+    providers: detected,
+    agentsCount,
   };
 }
 
