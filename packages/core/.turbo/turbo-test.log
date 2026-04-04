@@ -1,0 +1,27 @@
+
+> @opito/core@1.0.0 test /Users/leobar37/.supacode/repos/opito/feature/monorepo/packages/core
+> vitest run
+
+
+ RUN  v1.6.1 /Users/leobar37/.supacode/repos/opito/feature/monorepo/packages/core
+
+ ✓ src/__tests__/utils/fs.test.ts  (13 tests) 45ms
+ ✓ src/__tests__/core/converters/agent-converter.test.ts  (15 tests) 31ms
+ ✓ src/__tests__/core/converters/skill-converter.test.ts  (15 tests) 46ms
+ ✓ src/__tests__/core/parsers/opencode-skill-parser.test.ts  (7 tests) 50ms
+ ✓ src/__tests__/core/parsers/claude-skill-parser.test.ts  (11 tests) 57ms
+ ✓ src/__tests__/core/parsers/droid-agent-parser.test.ts  (18 tests) 62ms
+ ✓ src/__tests__/core/parsers/claude-agent-parser.test.ts  (14 tests) 60ms
+ ✓ src/__tests__/core/parsers/opencode-agent-parser.test.ts  (14 tests) 106ms
+ ✓ src/__tests__/core/parsers/droid-skill-parser.test.ts  (9 tests) 119ms
+ ✓ src/__tests__/core/parsers/claude.test.ts  (9 tests) 125ms
+ ✓ src/__tests__/core/converters/droid-converter.test.ts  (6 tests) 1ms
+ ✓ src/__tests__/core/parsers/codex-skill-parser.test.ts  (11 tests) 182ms
+ ✓ src/__tests__/utils/config.test.ts  (6 tests) 24ms
+ ✓ src/__tests__/core/parsers/droid.test.ts  (7 tests) 45ms
+
+ Test Files  14 passed (14)
+      Tests  155 passed (155)
+   Start at  23:06:24
+   Duration  621ms (transform 372ms, setup 0ms, collect 1.03s, tests 953ms, environment 2ms, prepare 1.28s)
+

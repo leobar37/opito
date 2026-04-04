@@ -1,0 +1,508 @@
+
+> @opito/cli@1.0.0 test /Users/leobar37/.supacode/repos/opito/feature/monorepo/packages/cli
+> vitest run
+
+
+ RUN  v1.6.1 /Users/leobar37/.supacode/repos/opito/feature/monorepo/packages/cli
+
+stdout | src/__tests__/commands/sync-agents-command.test.ts > syncAgentsCommand > validation > should exit when --from is not provided in non-interactive mode
+✗ Source provider is required. Use --from <provider> or --interactive
+
+stdout | src/__tests__/commands/set.test.ts > setBaseCommand > should update baseProvider to valid provider
+✓ Base provider set to: OpenCode
+ℹ️ Run "opito sync" to sync from OpenCode
+
+stdout | src/__tests__/commands/sync-agents-command.test.ts > syncAgentsCommand > validation > should exit when --to is not provided in non-interactive mode
+✗ Target provider is required. Use --to <provider> or --interactive
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > basic sync operations > should create CLAUDE.md from AGENTS.md
+ℹ️ Found 1 AGENTS.md file(s)
+
+stdout | src/__tests__/commands/sync-agents-command.test.ts > syncAgentsCommand > validation > should exit when --from is invalid provider
+✗ Invalid source provider: invalid
+
+stdout | src/__tests__/commands/sync-agents-command.test.ts > syncAgentsCommand > validation > should exit when --to is invalid provider
+✗ Invalid target provider: invalid
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > basic sync operations > should create CLAUDE.md from AGENTS.md
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185142-i7re6vo0dq/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > validation > should exit when --from is not provided
+✗ Source provider is required. Use --from <provider> or --interactive
+
+stdout | src/__tests__/commands/sync-agents-command.test.ts > syncAgentsCommand > validation > should exit when source and target are the same
+✗ Source and target providers cannot be the same
+
+stdout | src/__tests__/commands/set.test.ts > setBaseCommand > should accept all valid providers
+✓ Base provider set to: Claude Code
+ℹ️ Run "opito sync" to sync from Claude Code
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > validation > should exit when --to is not provided
+✗ Target provider is required. Use --to <provider> or --interactive
+
+stdout | src/__tests__/commands/set.test.ts > setBaseCommand > should accept all valid providers
+✓ Base provider set to: OpenCode
+ℹ️ Run "opito sync" to sync from OpenCode
+✓ Base provider set to: VS Code Copilot
+ℹ️ Run "opito sync" to sync from VS Code Copilot
+
+ ✓ src/__tests__/commands/sync-agents-command.test.ts  (7 tests) 8ms
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > validation > should exit when providers are the same
+✗ Source and target providers cannot be the same
+
+stdout | src/__tests__/commands/set.test.ts > setBaseCommand > should accept all valid providers
+✓ Base provider set to: Droid (Factory AI)
+ℹ️ Run "opito sync" to sync from Droid (Factory AI)
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > basic sync operations > should create CLAUDE.md without header when --no-header is set
+ℹ️ Found 1 AGENTS.md file(s)
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185149-7yc2j9jn8w5/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > validation > should exit with invalid provider
+✗ Invalid source provider: invalid
+
+stdout | src/__tests__/commands/set.test.ts > setBaseCommand > should exit with error for invalid provider
+✗ Invalid provider: invalid-provider
+ℹ️ Valid providers: claude, opencode, copilot, droid
+✓ Base provider set to: invalid-provider
+ℹ️ Run "opito sync" to sync from invalid-provider
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Syncing skills from claude to droid (global scope)...
+ℹ️ Reading skills from claude...
+
+stdout | src/__tests__/commands/set.test.ts > setBaseCommand > should handle provider names case sensitively
+✗ Invalid provider: Claude
+ℹ️ Valid providers: claude, opencode, copilot, droid
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > basic sync operations > should skip update when content is already up to date
+ℹ️ Found 1 AGENTS.md file(s)
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > basic sync operations > should skip update when content is already up to date
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185153-izbka2vlyng/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/set.test.ts > setBaseCommand > should handle provider names case sensitively
+✓ Base provider set to: Claude
+ℹ️ Run "opito sync" to sync from Claude
+
+ ✓ src/__tests__/commands/set.test.ts  (4 tests) 33ms
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > basic sync operations > should skip update when content is already up to date
+ℹ️ Found 1 AGENTS.md file(s)
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   0
+Updated:   0
+Skipped:   1
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > basic sync operations > should update CLAUDE.md when AGENTS.md changes
+ℹ️ Found 1 AGENTS.md file(s)
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > basic sync operations > should update CLAUDE.md when AGENTS.md changes
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185176-ccurum9dnj/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > basic sync operations > should update CLAUDE.md when AGENTS.md changes
+ℹ️ Found 1 AGENTS.md file(s)
+✓ Updated: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185176-ccurum9dnj/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   0
+Updated:   1
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > dry-run mode > should not create files in dry-run mode
+ℹ️ Found 1 AGENTS.md file(s)
+ℹ️ Would create: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185189-23hdqwdxqxg/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > dry-run mode > should report would-create in dry-run
+ℹ️ Found 1 AGENTS.md file(s)
+ℹ️ Would create: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185191-x02dkix59i/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > nested directories > should find AGENTS.md in nested directories
+ℹ️ Found 3 AGENTS.md file(s)
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185193-d0i9rwlfpfe/docs/CLAUDE.md
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > nested directories > should find AGENTS.md in nested directories
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185193-d0i9rwlfpfe/src/core/CLAUDE.md
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185193-d0i9rwlfpfe/src/utils/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     3
+Created:   3
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > nested directories > should create CLAUDE.md in same nested directories
+ℹ️ Found 1 AGENTS.md file(s)
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > nested directories > should create CLAUDE.md in same nested directories
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185204-9my4xm2szii/src/core/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > manual CLAUDE.md handling > should skip manual CLAUDE.md (not managed by opito)
+ℹ️ Found 1 AGENTS.md file(s)
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   0
+Updated:   0
+Skipped:   1
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > manual CLAUDE.md handling > should overwrite manual CLAUDE.md with --force
+ℹ️ Found 1 AGENTS.md file(s)
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Found 30 skill(s) to sync to droid
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > manual CLAUDE.md handling > should overwrite manual CLAUDE.md with --force
+✓ Updated: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185212-3qf7v9vybpq/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   0
+Updated:   1
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > orphan removal > should remove orphaned CLAUDE.md with --remove and --force flags
+ℹ️ Found 1 AGENTS.md file(s)
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > orphan removal > should remove orphaned CLAUDE.md with --remove and --force flags
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185217-9gc498xu3xl/subdir/CLAUDE.md
+⚠️ Removed: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185217-9gc498xu3xl/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     2
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   1
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: agent-maker
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > orphan removal > should not remove managed CLAUDE.md in --remove without --force
+ℹ️ Found 1 AGENTS.md file(s)
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > orphan removal > should not remove managed CLAUDE.md in --remove without --force
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185221-igr5glouuh/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+ℹ️ Found 1 AGENTS.md file(s)
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   0
+Updated:   0
+Skipped:   1
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > orphan removal > should not remove manual CLAUDE.md in --remove without --force
+ℹ️ Found 1 AGENTS.md file(s)
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   0
+Updated:   0
+Skipped:   1
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > orphan removal > should remove manual CLAUDE.md in --remove with --force
+ℹ️ Found 1 AGENTS.md file(s)
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > orphan removal > should remove manual CLAUDE.md in --remove with --force
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185231-899eb2hlpu8/other-dir/CLAUDE.md
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > orphan removal > should remove manual CLAUDE.md in --remove with --force
+⚠️ Removed: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185231-899eb2hlpu8/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     2
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   1
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > edge cases > should handle empty AGENTS.md
+ℹ️ Found 1 AGENTS.md file(s)
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185239-2sp9h8qbl6s/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > edge cases > should handle AGENTS.md with special characters
+ℹ️ Found 1 AGENTS.md file(s)
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > edge cases > should handle AGENTS.md with special characters
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185242-rabzvz6y3cp/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > edge cases > should handle non-existent root path gracefully
+ℹ️ Found 0 AGENTS.md file(s)
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     0
+Created:   0
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > edge cases > should ignore node_modules, .git, dist directories
+ℹ️ Found 1 AGENTS.md file(s)
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > edge cases > should ignore node_modules, .git, dist directories
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185248-8jzt9zb9oon/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     1
+Created:   1
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > report accuracy > should report correct counts for mixed operations
+ℹ️ Found 2 AGENTS.md file(s)
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185255-ulkrgmeroh/CLAUDE.md
+
+stdout | src/__tests__/commands/sync-agents.test.ts > syncToClaudeCommand > report accuracy > should report correct counts for mixed operations
+✓ Created: /var/folders/bw/m4482dp55s722qzz68xxclw80000gn/T/opito-test-sync-agents-1775189185255-ulkrgmeroh/dir1/CLAUDE.md
+
+📊 Agents Sync Report
+────────────────────────────────────────
+Total:     2
+Created:   2
+Updated:   0
+Skipped:   0
+Removed:   0
+Errors:    0
+────────────────────────────────────────
+
+ ✓ src/__tests__/commands/sync-agents.test.ts  (19 tests) 118ms
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: ai-elements
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: ai-sdk
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: ai-sdk-expert
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: animate
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: build-agents
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: bun-elysia
+ℹ️ Updated: colorize
+ℹ️ Updated: core
+ℹ️ Updated: delight
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: dokploy
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: elena-testing-patterns
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: expo-master
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+✓ Created: fal-generate
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: frontend
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: fullstack-auth-better
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: fullstack-backend
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: fullstack-infrastructure
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: fullstack-inngest
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: investigation-orchestrator
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: leon
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: nativewind-react-native
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: onboard
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: planner
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: playwright-skill
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: polish
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: qamanual
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: react-fix
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: remotion-setup
+
+stdout | src/__tests__/commands/sync-skills.test.ts > syncSkillsCommand > sync operations > should sync skills from Claude to Droid
+ℹ️ Updated: skill-maker
+
+📊 Skills Sync Report
+────────────────────────────────────────
+Total:     30
+Created:   1
+Updated:   29
+Skipped:   0
+Errors:    0
+────────────────────────────────────────
+
+ ✓ src/__tests__/commands/sync-skills.test.ts  (9 tests) 442ms
+
+ Test Files  4 passed (4)
+      Tests  39 passed (39)
+   Start at  23:06:24
+   Duration  941ms (transform 261ms, setup 0ms, collect 871ms, tests 601ms, environment 0ms, prepare 637ms)
+
