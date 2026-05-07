@@ -1,0 +1,33 @@
+{
+  "name": "opito",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "dev": "turbo run dev",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm --filter opito build && pnpm --filter opito publish --access public --no-git-checks"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.0",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "turbo": "^1.12.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "dependencies": {
+    "yaml": "^2.8.3"
+  }
+}
