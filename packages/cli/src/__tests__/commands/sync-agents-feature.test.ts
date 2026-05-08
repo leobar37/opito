@@ -1,23 +1,43 @@
 import { test, expect, describe, beforeEach, afterEach } from "vitest";
-import { syncAgentsCommand } from "../../commands/sync-agents.js";
-import { mkdir, rm } from "node:fs/promises";
+import { syncAgentsFeature } from "../../commands/sync-agents-feature.js";
+import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import type { OpitoConfig, AgentProvider } from "../../types/index.js";
+import type { OpitoConfig, AgentProvider } from "../../core/types/index.js";
 
-describe("syncAgentsCommand", () => {
+async function pathExists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+describe("syncAgentsFeature", () => {
   let testDir: string;
+  let claudeAgentsDir: string;
+  let droidAgentsDir: string;
   let config: OpitoConfig;
 
   beforeEach(async () => {
     testDir = join(tmpdir(), `opito-test-sync-agents-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    claudeAgentsDir = join(testDir, "claude-agents");
+    droidAgentsDir = join(testDir, "droid-agents");
+
     await mkdir(testDir, { recursive: true });
+    await mkdir(claudeAgentsDir, { recursive: true });
+    await mkdir(droidAgentsDir, { recursive: true });
 
     config = {
-      claude: { commandsPath: join(testDir, "claude-commands") },
+      claude: {
+        commandsPath: join(testDir, "claude-commands"),
+        agentsPath: claudeAgentsDir,
+      },
       opencode: { commandsPath: join(testDir, "opencode-commands") },
       droid: {
         commandsPath: join(testDir, "droid-commands"),
+        agentsPath: droidAgentsDir,
         enabled: true,
       },
       backup: {
@@ -33,6 +53,23 @@ describe("syncAgentsCommand", () => {
     await rm(testDir, { recursive: true, force: true });
   });
 
+  const createClaudeAgent = async (name: string, description: string, tools?: string[]) => {
+    const toolsYaml = tools ? `
+tools:
+${tools.map((tool) => `  - ${tool}`).join("\n")}` : "";
+    const content = `---
+name: ${name}
+description: ${description}
+model: sonnet${toolsYaml}
+---
+
+# ${name}
+
+Agent instructions here`;
+
+    await writeFile(join(claudeAgentsDir, `${name}.md`), content);
+  };
+
   describe("validation", () => {
     test("should exit when --from is not provided in non-interactive mode", async () => {
       let exitCode: number | undefined;
@@ -43,7 +80,7 @@ describe("syncAgentsCommand", () => {
       }) as typeof process.exit;
 
       try {
-        await syncAgentsCommand(config, {
+        await syncAgentsFeature(config, {
           to: "claude",
         });
         throw new Error("Should have exited");
@@ -65,7 +102,7 @@ describe("syncAgentsCommand", () => {
       }) as typeof process.exit;
 
       try {
-        await syncAgentsCommand(config, {
+        await syncAgentsFeature(config, {
           from: "claude",
         });
         throw new Error("Should have exited");
@@ -87,7 +124,7 @@ describe("syncAgentsCommand", () => {
       }) as typeof process.exit;
 
       try {
-        await syncAgentsCommand(config, {
+        await syncAgentsFeature(config, {
           from: "invalid" as AgentProvider,
           to: "claude",
         });
@@ -110,7 +147,7 @@ describe("syncAgentsCommand", () => {
       }) as typeof process.exit;
 
       try {
-        await syncAgentsCommand(config, {
+        await syncAgentsFeature(config, {
           from: "claude",
           to: "invalid" as AgentProvider,
         });
@@ -133,7 +170,7 @@ describe("syncAgentsCommand", () => {
       }) as typeof process.exit;
 
       try {
-        await syncAgentsCommand(config, {
+        await syncAgentsFeature(config, {
           from: "claude",
           to: "claude",
         });
@@ -169,6 +206,37 @@ describe("syncAgentsCommand", () => {
       expect(providers).toContain("claude");
       expect(providers).toContain("opencode");
       expect(providers).toContain("droid");
+    });
+  });
+
+  describe("sync operations", () => {
+    test("should sync Claude agents to Droid droids", async () => {
+      await createClaudeAgent("reviewer", "Reviews code", ["Read", "Grep"]);
+
+      await syncAgentsFeature(config, {
+        from: "claude",
+        to: "droid",
+        force: true,
+      });
+
+      const content = await readFile(join(droidAgentsDir, "reviewer.md"), "utf-8");
+
+      expect(content).toContain("name: reviewer");
+      expect(content).toContain("description: Reviews code");
+      expect(content).toContain("model: sonnet");
+      expect(content).toContain("Agent instructions here");
+    });
+
+    test("should not write Droid droids in dry-run mode", async () => {
+      await createClaudeAgent("dry-agent", "Dry run agent");
+
+      await syncAgentsFeature(config, {
+        from: "claude",
+        to: "droid",
+        dryRun: true,
+      });
+
+      expect(await pathExists(join(droidAgentsDir, "dry-agent.md"))).toBe(false);
     });
   });
 });

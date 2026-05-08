@@ -36,8 +36,9 @@ export async function initializeStrategies(
   if (claude) {
     await claude.initialize({
       basePath: config.claude.commandsPath,
-      skillsPath: getSkillsPath('claude', scope),
-      agentsPath: getAgentsPath('claude', scope),
+      commandsPath: config.claude.commandsPath,
+      skillsPath: getSkillsPath('claude', scope, config),
+      agentsPath: getAgentsPath('claude', scope, config),
     });
   }
 
@@ -45,8 +46,9 @@ export async function initializeStrategies(
   if (opencode) {
     await opencode.initialize({
       basePath: config.opencode.commandsPath,
-      skillsPath: getSkillsPath('opencode', scope),
-      agentsPath: getAgentsPath('opencode', scope),
+      commandsPath: config.opencode.commandsPath,
+      skillsPath: getSkillsPath('opencode', scope, config),
+      agentsPath: getAgentsPath('opencode', scope, config),
     });
   }
 
@@ -54,8 +56,9 @@ export async function initializeStrategies(
   if (droid) {
     await droid.initialize({
       basePath: config.droid.commandsPath,
-      skillsPath: getSkillsPath('droid', scope),
-      agentsPath: getAgentsPath('droid', scope),
+      commandsPath: config.droid.commandsPath,
+      skillsPath: getSkillsPath('droid', scope, config),
+      agentsPath: getAgentsPath('droid', scope, config),
     });
   }
 

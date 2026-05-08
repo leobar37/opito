@@ -34,11 +34,11 @@ opito doctor
 opito sync --dry-run    # Preview
 opito sync              # Execute
 
-# Sync skills
-opito sync-skills --from claude --to droid
+# Sync only skills
+opito sync claude droid --only skills
 
-# Sync agents
-opito sync-agents --from claude --to opencode
+# Sync only agents
+opito sync claude opencode --only agents
 ```
 
 ---
@@ -47,46 +47,18 @@ opito sync-agents --from claude --to opencode
 
 ### `opito sync [provider] [target]`
 
-Sync commands between providers.
+Sync commands, skills, and agents between providers.
 
 ```bash
 opito sync                          # Interactive mode
 opito sync claude                   # Claude → OpenCode (default)
 opito sync claude droid             # Claude → Droid
+opito sync claude droid --only commands
+opito sync claude droid --only skills
+opito sync claude droid --only agents
 opito sync --dry-run                # Preview changes
-opito sync --watch                  # Auto-sync on file changes
-opito sync --filter "commit,review" # Only specific commands
-```
-
-### `opito sync-skills`
-
-Sync skills between providers.
-
-```bash
-opito sync-skills --from claude --to droid
-opito sync-skills --from droid --to opencode --scope local
-opito sync-skills --interactive
-```
-
-### `opito sync-agents`
-
-Sync agents between providers.
-
-```bash
-opito sync-agents --from claude --to droid
-opito sync-agents --from droid --to opencode --scope local
-opito sync-agents --interactive
-```
-
-### `opito sync-to-claude [path]`
-
-Sync AGENTS.md files to CLAUDE.md recursively.
-
-```bash
-opito sync-to-claude              # Current directory
-opito sync-to-claude ./my-project # Specific directory
-opito sync-to-claude --watch      # Watch mode
-opito sync-to-claude --remove     # Remove orphaned CLAUDE.md files
+opito sync --watch --only commands  # Auto-sync one feature
+opito sync --filter "commit,review" # Only specific items
 ```
 
 ### `opito list`

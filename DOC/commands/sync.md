@@ -155,5 +155,4 @@ Errors:  0
 
 ## See Also
 
-- [sync-skills](./sync-skills.md) - For syncing agent skills
 - [Configuration Guide](../guides/CONFIGURATION.md) - Customize provider paths

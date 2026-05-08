@@ -63,7 +63,6 @@ Individual command implementations:
 | Command | Purpose | Lines |
 |---------|---------|-------|
 | `sync.ts` | Main sync orchestration | 353 |
-| `sync-skills.ts` | Skills sync | 308 |
 | `list.ts` | Command listing | 62 |
 | `init.ts` | Initialization | 49 |
 | `doctor.ts` | Diagnostics | 125 |

@@ -34,10 +34,12 @@ export class DroidStrategy implements IProviderStrategy {
 
   initialize(config: ProviderStrategyConfig): void {
     this.config = config;
-    const basePath = config.basePath;
-    this.commandParser = new DroidParser(basePath);
-    this.skillParser = new DroidSkillParser(basePath);
-    this.agentParser = new DroidAgentParser(basePath);
+    const commandsPath = config.commandsPath ?? config.basePath;
+    const skillsPath = config.skillsPath ?? config.basePath;
+    const agentsPath = config.agentsPath ?? config.basePath;
+    this.commandParser = new DroidParser(commandsPath);
+    this.skillParser = new DroidSkillParser(skillsPath);
+    this.agentParser = new DroidAgentParser(agentsPath);
   }
 
   async parseCommands(): Promise<CommandConfig[]> {
@@ -57,7 +59,7 @@ export class DroidStrategy implements IProviderStrategy {
   }
 
   async writeSkill(skill: SkillConfig): Promise<void> {
-    return this.skillConverter.writeSkill(skill, 'droid', this.config.basePath);
+    return this.skillConverter.writeSkill(skill, 'droid', this.config.skillsPath ?? this.config.basePath);
   }
 
   async skillExists(name: string): Promise<boolean> {
@@ -69,7 +71,7 @@ export class DroidStrategy implements IProviderStrategy {
   }
 
   async writeAgent(agent: AgentConfig): Promise<void> {
-    return this.agentConverter.writeAgent(agent, 'droid', this.config.basePath);
+    return this.agentConverter.writeAgent(agent, 'droid', this.config.agentsPath ?? this.config.basePath);
   }
 
   async agentExists(name: string): Promise<boolean> {

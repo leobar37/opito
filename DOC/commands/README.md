@@ -7,12 +7,10 @@ Complete reference for all OPITO CLI commands.
 | Command | Description | Status |
 |---------|-------------|--------|
 | [`sync`](./sync.md) | Main sync command between providers | Active |
-| [`sync-skills`](./sync-skills.md) | Sync skills between providers | Active |
 | [`list`](./list.md) | List commands from providers | Active |
 | [`doctor`](./doctor.md) | Environment diagnostics | Active |
 | [`init`](./init.md) | Initialize configuration | Active |
 | [`set base`](./set.md) | Set default provider | Active |
-| [`sync-to-claude`](./sync-to-claude.md) | Sync AGENTS.md to CLAUDE.md | Active |
 | [`dashboard`](./dashboard.md) | Open TUI dashboard | Active |
 | [`glm`](./providers.md) | Launch with GLM provider | Active |
 | [`kimi`](./providers.md) | Launch with Kimi provider | Active |
@@ -43,8 +41,8 @@ Most destructive commands support `--dry-run` to preview changes:
 
 ```bash
 opito sync --dry-run
-opito sync-skills --dry-run
-opito sync-to-claude --dry-run
+opito sync claude droid --only skills --dry-run
+opito sync claude droid --only agents --dry-run
 ```
 
 ### Using `--watch`
@@ -52,18 +50,18 @@ opito sync-to-claude --dry-run
 For continuous sync during development:
 
 ```bash
-opito sync --watch
-opito sync-skills --watch
-opito sync-to-claude --watch
+opito sync claude droid --only commands --watch
+opito sync claude droid --only skills --watch
+opito sync claude droid --only agents --watch
 ```
 
 ### Using `--filter`
 
-Sync only specific commands/skills:
+Sync only specific items:
 
 ```bash
 opito sync --filter "commit,review,test"
-opito sync-skills --filter "my-skill,another-skill"
+opito sync claude droid --only skills --filter "my-skill,another-skill"
 ```
 
 ## Deprecated Commands

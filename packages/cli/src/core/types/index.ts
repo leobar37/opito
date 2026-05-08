@@ -28,15 +28,21 @@ export interface DiffOptions {
 
 export interface DroidConfig {
   commandsPath: string;
+  skillsPath?: string;
+  agentsPath?: string;
   enabled: boolean;
 }
 
 export interface OpitoConfig {
   claude: {
     commandsPath: string;
+    skillsPath?: string;
+    agentsPath?: string;
   };
   opencode: {
     commandsPath: string;
+    skillsPath?: string;
+    agentsPath?: string;
   };
   droid: DroidConfig;
   backup: {
@@ -84,7 +90,7 @@ export interface ParsedFrontmatter {
 export type LogLevel = 'info' | 'success' | 'warning' | 'error' | 'debug';
 
 /**
- * Skill configuration for sync-skills command
+ * Skill configuration for sync skills operations
  */
 export interface SkillConfig {
   name: string;
@@ -113,7 +119,7 @@ export interface SkillFrontmatter {
 }
 
 /**
- * Options for sync-skills command
+ * Options for sync skills operations
  */
 export interface SyncSkillsOptions extends SyncOptions {
   from?: SkillProvider;
@@ -131,7 +137,7 @@ export interface SyncSkillResult {
 }
 
 /**
- * Report for sync-skills operation
+ * Report for sync skills operations
  */
 export interface SyncSkillsReport {
   total: number;

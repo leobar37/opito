@@ -26,11 +26,11 @@ Sync commands between 4 AI assistants:
 - **Bidirectional sync** - Sync in any direction between providers
 - **Watch mode** - Auto-sync when files change
 - **Dry-run mode** - Preview changes before applying
-- **Filtering** - Sync only specific commands
+- **Filtering** - Sync only specific commands, skills, or agents
 - **Backup system** - Automatic backups before sync
 
-### Skills Sync (Separate from Commands)
-Dedicated `sync-skills` command for syncing agent skills:
+### Unified Skills and Agents Sync
+Use `opito sync --only ...` for syncing specific feature types:
 - Claude skills (with allowedTools)
 - Droid skills (with userInvocable flags)
 - OpenCode skills (with metadata)
@@ -88,7 +88,6 @@ doc/
 ├── commands/                 # Command documentation
 │   ├── README.md            # Command index
 │   ├── sync.md              # Main sync command
-│   ├── sync-skills.md       # Skills sync
 │   ├── list.md              # List commands
 │   ├── doctor.md            # Diagnostics
 │   ├── init.md              # Initialization

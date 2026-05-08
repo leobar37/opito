@@ -5,7 +5,7 @@
  * Avoids risky conversions for unsupported metadata
  */
 import YAML from 'yaml';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { AgentConfig, AgentFrontmatter, AgentProvider } from '../types/index.js';
 
@@ -118,6 +118,8 @@ export class AgentConverter {
     agentsPath: string,
     _sourceAgentPath?: string,
   ): Promise<void> {
+    await mkdir(agentsPath, { recursive: true });
+
     const agentFile = join(agentsPath, `${agent.name}.md`);
     const content = this.serializeAgent(agent, to);
 

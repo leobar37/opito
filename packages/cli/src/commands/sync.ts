@@ -18,6 +18,10 @@ import type {
   Provider,
   Scope,
 } from '../core/index.js';
+import { syncAgentsFeature } from './sync-agents-feature.js';
+import { syncSkillsFeature } from './sync-skills-feature.js';
+
+export type SyncFeature = 'all' | 'commands' | 'skills' | 'agents';
 
 export interface UnifiedSyncCommandOptions extends SyncOptions {
   provider?: Provider;
@@ -25,6 +29,7 @@ export interface UnifiedSyncCommandOptions extends SyncOptions {
   scope?: Scope;
   interactive?: boolean;
   watch?: boolean;
+  only?: SyncFeature;
 }
 
 export async function unifiedSyncCommand(
@@ -70,7 +75,22 @@ export async function unifiedSyncCommand(
     process.exit(1);
   }
 
-  logger.info(`Syncing from ${provider} to ${target} (${scope} scope)...`);
+  const only = options.only || 'all';
+
+  if (!isValidSyncFeature(only)) {
+    logger.error(`Invalid --only value: ${only}`);
+    logger.info('Valid values: all, commands, skills, agents');
+    process.exit(1);
+  }
+
+  if (options.watch && only === 'all') {
+    logger.error('Watch mode requires --only commands, --only skills, or --only agents');
+    process.exit(1);
+  }
+
+  if (only === 'all' || only === 'commands') {
+    logger.info(`Syncing ${only} from ${provider} to ${target} (${scope} scope)...`);
+  }
 
   const syncOptions: SyncOptions = {
     dryRun: options.dryRun,
@@ -78,10 +98,48 @@ export async function unifiedSyncCommand(
     filter: options.filter,
   };
 
-  if (options.watch) {
+  if (options.watch && only === 'commands') {
     await runWatchMode(config, provider, target, scope, syncOptions);
   } else {
-    await runSingleSync(config, provider, target, scope, syncOptions);
+    await runSelectedSync(config, provider, target, scope, syncOptions, only, options.watch);
+  }
+}
+
+async function runSelectedSync(
+  config: OpitoConfig,
+  provider: Provider,
+  target: Provider,
+  scope: Scope,
+  options: SyncOptions,
+  only: SyncFeature,
+  watch?: boolean
+): Promise<void> {
+  if (only === 'all' || only === 'commands') {
+    await runSingleSync(config, provider, target, scope, options);
+  }
+
+  if (only === 'all' || only === 'skills') {
+    await syncSkillsFeature(config, {
+      from: provider,
+      to: target,
+      scope,
+      dryRun: options.dryRun,
+      force: options.force,
+      filter: options.filter,
+      watch,
+    });
+  }
+
+  if (only === 'all' || only === 'agents') {
+    await syncAgentsFeature(config, {
+      from: provider,
+      to: target,
+      scope,
+      dryRun: options.dryRun,
+      force: options.force,
+      filter: options.filter,
+      watch,
+    });
   }
 }
 
@@ -186,4 +244,8 @@ async function performSync(
   );
 
   return report.results;
+}
+
+function isValidSyncFeature(value: string): value is SyncFeature {
+  return ['all', 'commands', 'skills', 'agents'].includes(value);
 }

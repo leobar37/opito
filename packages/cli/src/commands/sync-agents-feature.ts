@@ -1,59 +1,59 @@
 /**
- * Sync skills command — uses SyncEngineV2 with provider strategies
+ * Sync agents feature — uses SyncEngineV2 with provider strategies
  */
 import { dirname } from "node:path";
 import {
   BackupManager,
   logger,
-  getSkillsPath,
-  detectLocalSkills,
-  type LocalSkillsDetection,
-  promptForSkillSyncOptions,
+  getAgentsPath,
+  detectLocalAgents,
+  type LocalAgentsDetection,
+  promptForAgentSyncOptions,
   SyncEngine,
   setupStrategies,
   strategyRegistry,
-  SkillConverter,
+  AgentConverter,
 } from "../core/index.js";
 import type {
-  SkillConfig,
-  SkillProvider,
-  SyncSkillsOptions,
-  SyncSkillResult,
-  SyncSkillsReport,
+  AgentConfig,
+  AgentProvider,
+  SyncAgentsOptions,
+  SyncAgentResult,
+  SyncAgentsReport,
   OpitoConfig,
   WriteFn,
 } from "../core/index.js";
 
-export interface SyncSkillsCommandOptions extends SyncSkillsOptions {
-  from?: SkillProvider;
-  to?: SkillProvider;
+export interface SyncAgentsFeatureOptions extends SyncAgentsOptions {
+  from?: AgentProvider;
+  to?: AgentProvider;
   watch?: boolean;
   interactive?: boolean;
   scope?: "local" | "global";
 }
 
-export async function syncSkillsCommand(
+export async function syncAgentsFeature(
   config: OpitoConfig,
-  options: SyncSkillsCommandOptions
+  options: SyncAgentsFeatureOptions
 ): Promise<void> {
-  let from: SkillProvider;
-  let to: SkillProvider;
+  let from: AgentProvider;
+  let to: AgentProvider;
   let scope: "local" | "global";
 
   if (options.interactive || (!options.from && !options.to)) {
-    const localDetection = await detectLocalSkills();
+    const localDetection = await detectLocalAgents();
 
-    if (localDetection.hasLocalSkills) {
-      logger.info(`📁 Local skills detected in this project:`);
+    if (localDetection.hasLocalAgents) {
+      logger.info(`📁 Local agents detected in this project:`);
       for (const provider of localDetection.providers) {
         logger.info(
-          `   • ${provider}: ${localDetection.skillsCount[provider]} skill(s)`
+          `   • ${provider}: ${localDetection.agentsCount[provider]} agent(s)`
         );
       }
       logger.newline();
     }
 
-    const interactiveOptions = await promptForSkillSyncOptions(localDetection);
+    const interactiveOptions = await promptForAgentSyncOptions(localDetection);
     from = interactiveOptions.from;
     to = interactiveOptions.to;
     scope = interactiveOptions.scope;
@@ -72,12 +72,12 @@ export async function syncSkillsCommand(
       process.exit(1);
     }
 
-    if (!isValidSkillProvider(options.from)) {
+    if (!isValidAgentProvider(options.from)) {
       logger.error(`Invalid source provider: ${options.from}`);
       process.exit(1);
     }
 
-    if (!isValidSkillProvider(options.to)) {
+    if (!isValidAgentProvider(options.to)) {
       logger.error(`Invalid target provider: ${options.to}`);
       process.exit(1);
     }
@@ -92,9 +92,9 @@ export async function syncSkillsCommand(
     process.exit(1);
   }
 
-  logger.info(`Syncing skills from ${from} to ${to} (${scope} scope)...`);
+  logger.info(`Syncing agents from ${from} to ${to} (${scope} scope)...`);
 
-  const syncOptions: SyncSkillsOptions = {
+  const syncOptions: SyncAgentsOptions = {
     dryRun: options.dryRun,
     force: options.force,
     filter: options.filter,
@@ -109,23 +109,24 @@ export async function syncSkillsCommand(
 
 async function runSingleSync(
   config: OpitoConfig,
-  from: SkillProvider,
-  to: SkillProvider,
+  from: AgentProvider,
+  to: AgentProvider,
   scope: "local" | "global",
-  options: SyncSkillsOptions
+  options: SyncAgentsOptions
 ): Promise<void> {
   const results = await performSync(config, from, to, scope, options);
 
-  const report: SyncSkillsReport = {
+  const report: SyncAgentsReport = {
     total: results.length,
     created: results.filter((r) => r.action === "created").length,
     updated: results.filter((r) => r.action === "updated").length,
     skipped: results.filter((r) => r.action === "skipped").length,
+    removed: results.filter((r) => r.action === "removed").length,
     errors: results.filter((r) => r.action === "error").length,
     results,
   };
 
-  logger.reportSkills(report);
+  logger.reportAgents(report);
 
   if (report.errors > 0) {
     process.exit(1);
@@ -134,15 +135,15 @@ async function runSingleSync(
 
 async function runWatchMode(
   config: OpitoConfig,
-  from: SkillProvider,
-  to: SkillProvider,
+  from: AgentProvider,
+  to: AgentProvider,
   scope: "local" | "global",
-  options: SyncSkillsOptions
+  options: SyncAgentsOptions
 ): Promise<void> {
   logger.info("Starting watch mode...");
 
   const { watch } = await import("chokidar");
-  const sourcePath = getSkillsPath(from, scope);
+  const sourcePath = getAgentsPath(from, scope, config);
 
   const watcher = watch(sourcePath, {
     persistent: true,
@@ -154,16 +155,17 @@ async function runWatchMode(
     logger.info("Changes detected, syncing...");
     const results = await performSync(config, from, to, scope, options);
 
-    const report: SyncSkillsReport = {
+    const report: SyncAgentsReport = {
       total: results.length,
       created: results.filter((r) => r.action === "created").length,
       updated: results.filter((r) => r.action === "updated").length,
       skipped: results.filter((r) => r.action === "skipped").length,
+      removed: results.filter((r) => r.action === "removed").length,
       errors: results.filter((r) => r.action === "error").length,
       results,
     };
 
-    logger.reportSkills(report);
+    logger.reportAgents(report);
   };
 
   watcher.on("change", syncAndReport);
@@ -178,11 +180,11 @@ async function runWatchMode(
 
 async function performSync(
   config: OpitoConfig,
-  from: SkillProvider,
-  to: SkillProvider,
+  from: AgentProvider,
+  to: AgentProvider,
   scope: "local" | "global",
-  options: SyncSkillsOptions
-): Promise<SyncSkillResult[]> {
+  options: SyncAgentsOptions
+): Promise<SyncAgentResult[]> {
   await setupStrategies(config, scope);
 
   const source = strategyRegistry.get(from);
@@ -192,27 +194,27 @@ async function performSync(
     throw new Error(`Strategy not found for ${from} or ${to}`);
   }
 
-  const targetPath = getSkillsPath(to, scope);
+  const targetPath = getAgentsPath(to, scope, config);
   const backupManager =
     config.backup.enabled && !options.force && !options.dryRun
       ? new BackupManager(config.backup.path, config.backup.maxBackups)
       : null;
 
-  const converter = new SkillConverter();
+  const converter = new AgentConverter();
 
-  const convertFn = (item: SkillConfig) => converter.convert(item, from, to);
+  const convertFn = (item: AgentConfig) => converter.convert(item, from, to);
 
   const writeFn: WriteFn = async (_target, item) => {
-    const skill = item as SkillConfig;
-    const sourceSkillPath = dirname(skill.sourcePath);
-    await converter.writeSkill(skill, to, targetPath, sourceSkillPath);
+    const agent = item as AgentConfig;
+    const sourceAgentPath = dirname(agent.sourcePath);
+    await converter.writeAgent(agent, to, targetPath, sourceAgentPath);
   };
 
   const engine = new SyncEngine();
   const report = await engine.sync(
     source,
     target,
-    "skills",
+    "agents",
     {
       ...options,
       backupManager,
@@ -224,12 +226,12 @@ async function performSync(
 
   return report.results.map((r) => ({
     success: r.success,
-    skill: r.command,
-    action: r.action as "created" | "updated" | "skipped" | "error",
+    agent: r.command,
+    action: r.action as "created" | "updated" | "skipped" | "removed" | "error",
     error: r.error,
   }));
 }
 
-function isValidSkillProvider(name: string): name is SkillProvider {
-  return ["claude", "codex", "droid", "opencode"].includes(name);
+function isValidAgentProvider(name: string): name is AgentProvider {
+  return ["claude", "droid", "opencode"].includes(name);
 }

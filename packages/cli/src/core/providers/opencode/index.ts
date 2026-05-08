@@ -34,10 +34,12 @@ export class OpencodeStrategy implements IProviderStrategy {
 
   initialize(config: ProviderStrategyConfig): void {
     this.config = config;
-    const basePath = config.basePath;
-    this.commandParser = new OpencodeParser(basePath);
-    this.skillParser = new OpencodeSkillParser(basePath);
-    this.agentParser = new OpencodeAgentParser(basePath);
+    const commandsPath = config.commandsPath ?? config.basePath;
+    const skillsPath = config.skillsPath ?? config.basePath;
+    const agentsPath = config.agentsPath ?? config.basePath;
+    this.commandParser = new OpencodeParser(commandsPath);
+    this.skillParser = new OpencodeSkillParser(skillsPath);
+    this.agentParser = new OpencodeAgentParser(agentsPath);
   }
 
   async parseCommands(): Promise<CommandConfig[]> {
@@ -57,7 +59,7 @@ export class OpencodeStrategy implements IProviderStrategy {
   }
 
   async writeSkill(skill: SkillConfig): Promise<void> {
-    return this.skillConverter.writeSkill(skill, 'opencode', this.config.basePath);
+    return this.skillConverter.writeSkill(skill, 'opencode', this.config.skillsPath ?? this.config.basePath);
   }
 
   async skillExists(name: string): Promise<boolean> {
@@ -69,7 +71,7 @@ export class OpencodeStrategy implements IProviderStrategy {
   }
 
   async writeAgent(agent: AgentConfig): Promise<void> {
-    return this.agentConverter.writeAgent(agent, 'opencode', this.config.basePath);
+    return this.agentConverter.writeAgent(agent, 'opencode', this.config.agentsPath ?? this.config.basePath);
   }
 
   async agentExists(name: string): Promise<boolean> {

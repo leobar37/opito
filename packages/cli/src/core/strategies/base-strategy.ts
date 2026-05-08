@@ -35,6 +35,12 @@ export class ProviderCapabilityError extends Error {
 export interface ProviderStrategyConfig {
   /** Base path for the provider's data */
   basePath: string;
+  /** Optional explicit path for commands */
+  commandsPath?: string;
+  /** Optional explicit path for skills */
+  skillsPath?: string;
+  /** Optional explicit path for agents/droids */
+  agentsPath?: string;
   /** Optional provider-specific configuration */
   [key: string]: unknown;
 }

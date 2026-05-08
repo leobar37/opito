@@ -3,7 +3,7 @@
  *
  * Rule: If strategy mapping is not possible, sync with full permissions
  */
-import { copyFile, mkdir, readdir, writeFile } from "node:fs/promises";
+import { copyFile, lstat, mkdir, readdir, stat, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import YAML from "yaml";
 import type {
@@ -211,6 +211,7 @@ export class SkillConverter {
     sourceSkillPath?: string,
   ): Promise<void> {
     const skillDir = join(skillsPath, skill.name);
+    await this.removeBrokenSymlink(skillDir);
     await mkdir(skillDir, { recursive: true });
 
     const skillFile = join(skillDir, "SKILL.md");
@@ -221,6 +222,23 @@ export class SkillConverter {
     // Copy supporting files if source path is provided
     if (sourceSkillPath) {
       await this.copySkillDirectory(sourceSkillPath, skillDir);
+    }
+  }
+
+  private async removeBrokenSymlink(path: string): Promise<void> {
+    try {
+      const pathStat = await lstat(path);
+      if (!pathStat.isSymbolicLink()) {
+        return;
+      }
+
+      try {
+        await stat(path);
+      } catch {
+        await unlink(path);
+      }
+    } catch {
+      // Path does not exist.
     }
   }
 

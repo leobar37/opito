@@ -8,12 +8,8 @@ import {
   getAllProviders,
 } from "./core/index.js";
 import type { Provider, Scope } from "./core/index.js";
+import type { SyncFeature } from "./commands/sync.js";
 import { unifiedSyncCommand } from "./commands/sync.js";
-import {
-  syncSkillsCommand,
-  syncAgentsCommand,
-  syncToClaudeCommand,
-} from "./commands/index.js";
 import { listCommand } from "./commands/list.js";
 import { initCommand } from "./commands/init.js";
 import { doctorCommand } from "./commands/doctor.js";
@@ -22,7 +18,7 @@ import { setBaseCommand } from "./commands/set.js";
 const cli = cac("opito");
 
 cli
-  .command("sync [provider] [target]", "Sync commands between providers")
+  .command("sync [provider] [target]", "Sync commands, skills, and agents between providers")
   .option(
     "-t, --target <target>",
     "Target provider (claude, opencode, droid)"
@@ -37,15 +33,24 @@ cli
     "Run in interactive mode (select provider and target)"
   )
   .option("--dry-run", "Show what would be synced without making changes")
-  .option("--force", "Skip backup and overwrite existing commands")
+  .option("--force", "Skip backup and overwrite existing files")
   .option("--watch", "Watch for changes and sync automatically")
-  .option("--filter <commands>", "Comma-separated list of commands to sync")
+  .option("--only <feature>", "Sync only one feature: commands, skills, agents, or all", {
+    default: "all",
+  })
+  .option("--filter <items>", "Comma-separated list of item names to sync")
   .example("opito sync                          # Interactive mode")
   .example(
-    "opito sync claude                   # Sync claude → opencode (default)"
+    "opito sync claude droid             # Sync commands, skills, and agents"
   )
   .example(
-    "opito sync claude --local           # Sync to local project directories"
+    "opito sync claude droid --only skills # Sync only skills"
+  )
+  .example(
+    "opito sync claude droid --only agents # Sync only agents/droids"
+  )
+  .example(
+    "opito sync claude droid --local     # Sync to local project directories"
   )
   .example("opito sync --interactive            # Interactive selection")
   .action(
@@ -60,6 +65,7 @@ cli
         dryRun?: boolean;
         force?: boolean;
         watch?: boolean;
+        only?: string;
         filter?: string;
       }
     ) => {
@@ -68,11 +74,7 @@ cli
 
         const provider = (providerArg || config.baseProvider) as Provider;
         const target = (options.target || targetArg) as Provider | undefined;
-        const scope: Scope = options.local
-          ? "local"
-          : options.global === false
-          ? "local"
-          : "global";
+        const scope: Scope = options.local ? "local" : "global";
 
         if (options.interactive || !target) {
           await unifiedSyncCommand(config, {
@@ -83,6 +85,7 @@ cli
             dryRun: options.dryRun,
             force: options.force,
             watch: options.watch,
+            only: options.only as SyncFeature | undefined,
             filter: options.filter
               ? options.filter.split(",").map((f: string) => f.trim())
               : undefined,
@@ -96,6 +99,7 @@ cli
             dryRun: options.dryRun,
             force: options.force,
             watch: options.watch,
+            only: options.only as SyncFeature | undefined,
             filter: options.filter
               ? options.filter.split(",").map((f: string) => f.trim())
               : undefined,
@@ -177,187 +181,6 @@ cli
       process.exit(1);
     }
   });
-
-cli
-  .command(
-    "sync-skills",
-    "Sync skills between providers (Claude, Droid, OpenCode)"
-  )
-  .option("--from <provider>", "Source provider: claude, droid, or opencode")
-  .option("--to <provider>", "Target provider: claude, droid, or opencode")
-  .option(
-    "-i, --interactive",
-    "Run in interactive mode (select providers and scope)"
-  )
-  .option("--scope <scope>", "Sync scope: local or global", {
-    default: "global",
-  })
-  .option("--dry-run", "Show what would be synced without making changes")
-  .option("--force", "Skip backup and overwrite existing skills")
-  .option("--watch", "Watch for changes and sync automatically")
-  .option("--filter <skills>", "Comma-separated list of skills to sync")
-  .example(
-    "opito sync-skills --interactive                  # Interactive mode"
-  )
-  .example(
-    "opito sync-skills --from claude --to droid       # Sync Claude skills to Droid"
-  )
-  .example(
-    "opito sync-skills --from claude --to droid --scope local # Sync locally"
-  )
-  .example(
-    "opito sync-skills --from droid --to opencode     # Sync Droid skills to OpenCode"
-  )
-  .example(
-    "opito sync-skills --from claude --to opencode --dry-run  # Preview changes"
-  )
-  .example(
-    "opito sync-skills --from claude --to droid --watch       # Watch mode"
-  )
-  .action(
-    async (options: {
-      from?: string;
-      to?: string;
-      interactive?: boolean;
-      scope?: string;
-      dryRun?: boolean;
-      force?: boolean;
-      watch?: boolean;
-      filter?: string;
-    }) => {
-      try {
-        const config = await configManager.load();
-        await syncSkillsCommand(config, {
-          from: options.from as "claude" | "droid" | "opencode" | undefined,
-          to: options.to as "claude" | "droid" | "opencode" | undefined,
-          interactive: options.interactive,
-          scope: options.scope as "local" | "global" | undefined,
-          dryRun: options.dryRun,
-          force: options.force,
-          watch: options.watch,
-          filter: options.filter
-            ? options.filter.split(",").map((f: string) => f.trim())
-            : undefined,
-        });
-      } catch (error) {
-        logger.error(error instanceof Error ? error.message : "Unknown error");
-        process.exit(1);
-      }
-    }
-  );
-
-cli
-  .command(
-    "sync-agents",
-    "Sync agents between providers (Claude, Droid, OpenCode)"
-  )
-  .option("--from <provider>", "Source provider: claude, droid, or opencode")
-  .option("--to <provider>", "Target provider: claude, droid, or opencode")
-  .option(
-    "-i, --interactive",
-    "Run in interactive mode (select providers and scope)"
-  )
-  .option("--scope <scope>", "Sync scope: local or global", {
-    default: "global",
-  })
-  .option("--dry-run", "Show what would be synced without making changes")
-  .option("--force", "Skip backup and overwrite existing agents")
-  .option("--watch", "Watch for changes and sync automatically")
-  .option("--filter <agents>", "Comma-separated list of agents to sync")
-  .example(
-    "opito sync-agents --interactive                  # Interactive mode"
-  )
-  .example(
-    "opito sync-agents --from claude --to droid       # Sync Claude agents to Droid"
-  )
-  .example(
-    "opito sync-agents --from claude --to droid --scope local # Sync locally"
-  )
-  .example(
-    "opito sync-agents --from droid --to opencode     # Sync Droid agents to OpenCode"
-  )
-  .example(
-    "opito sync-agents --from claude --to opencode --dry-run  # Preview changes"
-  )
-  .example(
-    "opito sync-agents --from claude --to droid --watch       # Watch mode"
-  )
-  .action(
-    async (options: {
-      from?: string;
-      to?: string;
-      interactive?: boolean;
-      scope?: string;
-      dryRun?: boolean;
-      force?: boolean;
-      watch?: boolean;
-      filter?: string;
-    }) => {
-      try {
-        const config = await configManager.load();
-        await syncAgentsCommand(config, {
-          from: options.from as "claude" | "droid" | "opencode" | undefined,
-          to: options.to as "claude" | "droid" | "opencode" | undefined,
-          interactive: options.interactive,
-          scope: options.scope as "local" | "global" | undefined,
-          dryRun: options.dryRun,
-          force: options.force,
-          watch: options.watch,
-          filter: options.filter
-            ? options.filter.split(",").map((f: string) => f.trim())
-            : undefined,
-        });
-      } catch (error) {
-        logger.error(error instanceof Error ? error.message : "Unknown error");
-        process.exit(1);
-      }
-    }
-  );
-
-cli
-  .command("sync-to-claude [path]", "Sync AGENTS.md to CLAUDE.md recursively")
-  .option("--dry-run", "Show what would be synced without making changes")
-  .option("--watch", "Watch for changes and sync automatically")
-  .option("--remove", "Remove orphaned CLAUDE.md files (without AGENTS.md)")
-  .option("--force", "Overwrite existing CLAUDE.md files")
-  .option("--no-header", "Skip auto-generated header in CLAUDE.md")
-  .example(
-    "opito sync-to-claude                       # Sync in current directory"
-  )
-  .example(
-    "opito sync-to-claude ./my-project          # Sync in specific directory"
-  )
-  .example("opito sync-to-claude --dry-run             # Preview changes")
-  .example("opito sync-to-claude --watch               # Watch for changes")
-  .example(
-    "opito sync-to-claude --remove              # Remove orphaned CLAUDE.md"
-  )
-  .action(
-    async (
-      path: string | undefined,
-      options: {
-        dryRun?: boolean;
-        watch?: boolean;
-        remove?: boolean;
-        force?: boolean;
-        noHeader?: boolean;
-      }
-    ) => {
-      try {
-        const projectPath = path || process.cwd();
-        await syncToClaudeCommand(projectPath, {
-          dryRun: options.dryRun,
-          watch: options.watch,
-          remove: options.remove,
-          force: options.force,
-          noHeader: options.noHeader,
-        });
-      } catch (error) {
-        logger.error(error instanceof Error ? error.message : "Unknown error");
-        process.exit(1);
-      }
-    }
-  );
 
 cli.help();
 cli.version("1.0.0");

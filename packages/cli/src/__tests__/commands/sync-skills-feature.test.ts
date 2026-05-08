@@ -1,11 +1,20 @@
 import { test, expect, describe, beforeEach, afterEach } from "vitest";
-import { syncSkillsCommand } from "../../commands/sync-skills.js";
-import { mkdir, writeFile, rm, readdir } from "node:fs/promises";
+import { syncSkillsFeature } from "../../commands/sync-skills-feature.js";
+import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import type { OpitoConfig } from "../../types/index.js";
+import type { OpitoConfig } from "../../core/types/index.js";
 
-describe("syncSkillsCommand", () => {
+async function pathExists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+describe("syncSkillsFeature", () => {
   let testDir: string;
   let claudeSkillsDir: string;
   let droidSkillsDir: string;
@@ -23,10 +32,17 @@ describe("syncSkillsCommand", () => {
     await mkdir(opencodeSkillsDir, { recursive: true });
 
     config = {
-      claude: { commandsPath: join(testDir, "claude-commands") },
-      opencode: { commandsPath: join(testDir, "opencode-commands") },
+      claude: {
+        commandsPath: join(testDir, "claude-commands"),
+        skillsPath: claudeSkillsDir,
+      },
+      opencode: {
+        commandsPath: join(testDir, "opencode-commands"),
+        skillsPath: opencodeSkillsDir,
+      },
       droid: {
         commandsPath: join(testDir, "droid-commands"),
+        skillsPath: droidSkillsDir,
         enabled: true,
       },
       backup: {
@@ -46,7 +62,8 @@ describe("syncSkillsCommand", () => {
     const skillDir = join(claudeSkillsDir, name);
     await mkdir(skillDir, { recursive: true });
 
-    const toolsYaml = tools ? `
+    const toolsYaml = tools ? tools.length === 0 ? `
+allowed-tools: []` : `
 allowed-tools:
 ${tools.map((t) => `  - ${t}`).join("\n")}` : "";
 
@@ -95,7 +112,7 @@ Skill content here`;
       }) as typeof process.exit;
 
       try {
-        await syncSkillsCommand(config, { to: "droid" });
+        await syncSkillsFeature(config, { to: "droid" });
       } catch (e) {
         // Expected
       }
@@ -113,7 +130,7 @@ Skill content here`;
       }) as typeof process.exit;
 
       try {
-        await syncSkillsCommand(config, { from: "claude" });
+        await syncSkillsFeature(config, { from: "claude" });
       } catch (e) {
         // Expected
       }
@@ -131,7 +148,7 @@ Skill content here`;
       }) as typeof process.exit;
 
       try {
-        await syncSkillsCommand(config, { from: "claude", to: "claude" });
+        await syncSkillsFeature(config, { from: "claude", to: "claude" });
       } catch (e) {
         // Expected
       }
@@ -149,7 +166,7 @@ Skill content here`;
       }) as typeof process.exit;
 
       try {
-        await syncSkillsCommand(config, { from: "invalid" as "claude", to: "droid" });
+        await syncSkillsFeature(config, { from: "invalid" as "claude", to: "droid" });
       } catch (e) {
         // Expected
       }
@@ -163,11 +180,7 @@ Skill content here`;
     test("should sync skills from Claude to Droid", async () => {
       await createClaudeSkill("test-skill", "Test skill description", ["Read", "Write"]);
 
-      // Mock getSkillsPath to return our test directories
-      const { getSkillsPath } = await import("../../core/index.js");
-      const originalGetSkillsPath = getSkillsPath;
-
-      await syncSkillsCommand(config, {
+      await syncSkillsFeature(config, {
         from: "claude",
         to: "droid",
         dryRun: false,
@@ -175,13 +188,13 @@ Skill content here`;
       });
 
       const droidSkillPath = join(droidSkillsDir, "test-skill", "SKILL.md");
-      const exists = await readdir(join(droidSkillsDir, "test-skill"))
-        .then(() => true)
-        .catch(() => false);
+      const content = await readFile(droidSkillPath, "utf-8");
 
-      // Note: This test would need proper mocking of getSkillsPath
-      // For now, we verify the command structure is correct
-      expect(true).toBe(true);
+      expect(content).toContain("name: test-skill");
+      expect(content).toContain("description: Test skill description");
+      expect(content).toContain("user-invocable: true");
+      expect(content).toContain("disable-model-invocation: false");
+      expect(content).toContain("Skill content here");
     });
 
     test("should filter skills when --filter is provided", async () => {
@@ -189,17 +202,28 @@ Skill content here`;
       await createClaudeSkill("skill-two", "Second skill");
       await createClaudeSkill("skill-three", "Third skill");
 
-      // With filter, only skill-one and skill-two should be synced
-      // This would need proper mocking to verify
-      expect(true).toBe(true);
+      await syncSkillsFeature(config, {
+        from: "claude",
+        to: "droid",
+        force: true,
+        filter: ["skill-one", "skill-two"],
+      });
+
+      expect(await pathExists(join(droidSkillsDir, "skill-one", "SKILL.md"))).toBe(true);
+      expect(await pathExists(join(droidSkillsDir, "skill-two", "SKILL.md"))).toBe(true);
+      expect(await pathExists(join(droidSkillsDir, "skill-three", "SKILL.md"))).toBe(false);
     });
 
     test("should respect --dry-run flag", async () => {
       await createClaudeSkill("dry-run-skill", "Dry run test");
 
-      // In dry-run mode, no files should be created
-      // This would need proper mocking to verify
-      expect(true).toBe(true);
+      await syncSkillsFeature(config, {
+        from: "claude",
+        to: "droid",
+        dryRun: true,
+      });
+
+      expect(await pathExists(join(droidSkillsDir, "dry-run-skill", "SKILL.md"))).toBe(false);
     });
   });
 
@@ -207,17 +231,28 @@ Skill content here`;
     test("should convert Claude allowed-tools to Droid invocation settings", async () => {
       await createClaudeSkill("restricted-skill", "Restricted skill", []);
 
-      // When synced to Droid, should have disable-model-invocation: true
-      // This would need proper mocking to verify
-      expect(true).toBe(true);
+      await syncSkillsFeature(config, {
+        from: "claude",
+        to: "droid",
+        force: true,
+      });
+
+      const content = await readFile(join(droidSkillsDir, "restricted-skill", "SKILL.md"), "utf-8");
+      expect(content).toContain("disable-model-invocation: true");
     });
 
     test("should apply full permissions fallback when strategy cannot be mapped", async () => {
       await createClaudeSkill("full-perm-skill", "Full permissions skill");
 
-      // When synced to Droid without allowed-tools, should have full permissions
-      // This would need proper mocking to verify
-      expect(true).toBe(true);
+      await syncSkillsFeature(config, {
+        from: "claude",
+        to: "droid",
+        force: true,
+      });
+
+      const content = await readFile(join(droidSkillsDir, "full-perm-skill", "SKILL.md"), "utf-8");
+      expect(content).toContain("user-invocable: true");
+      expect(content).toContain("disable-model-invocation: false");
     });
   });
 });

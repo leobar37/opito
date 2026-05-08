@@ -45,7 +45,16 @@ const DEFAULT_CONFIG: OpitoConfig = {
 /**
  * Get the skills path for a provider
  */
-export function getSkillsPath(provider: SkillProvider, scope: 'local' | 'global' = 'global'): string {
+export function getSkillsPath(
+  provider: SkillProvider,
+  scope: 'local' | 'global' = 'global',
+  config?: OpitoConfig,
+): string {
+  const configuredPath = provider === 'codex' ? undefined : config?.[provider]?.skillsPath;
+  if (configuredPath) {
+    return configuredPath;
+  }
+
   if (scope === 'local') {
     switch (provider) {
       case 'claude':
@@ -114,7 +123,16 @@ export async function detectLocalSkills(): Promise<LocalSkillsDetection> {
   };
 }
 
-export function getAgentsPath(provider: AgentProvider, scope: 'local' | 'global' = 'global'): string {
+export function getAgentsPath(
+  provider: AgentProvider,
+  scope: 'local' | 'global' = 'global',
+  config?: OpitoConfig,
+): string {
+  const configuredPath = config?.[provider]?.agentsPath;
+  if (configuredPath) {
+    return configuredPath;
+  }
+
   if (scope === 'local') {
     switch (provider) {
       case 'claude':
